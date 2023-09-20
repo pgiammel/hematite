@@ -11,7 +11,7 @@
 
 ## What is this?
 
-This is an experimental **Deno** library to write code than more or less feel
+This is an experimental **Deno** library to write code that more or less feel
 just a little bit kind of Rust-ish, while being as typed as possible.
 
 There are a few tests and documentation comments here and there, as well as some
