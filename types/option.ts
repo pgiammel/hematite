@@ -146,4 +146,15 @@ export namespace Option {
 
         return defaultFn();
     }
+
+    /**
+     * @returns `None` if `lhs` is `None`, otherwise returns `rhs`.
+     */
+    export function and<T, U>(lhs: Option<T>, rhs: Option<U>): Option<U> {
+        if (Option.isSome(lhs)) {
+            return rhs;
+        }
+
+        return Option.None();
+    }
 }
