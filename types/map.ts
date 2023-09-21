@@ -8,31 +8,35 @@ import {
 export const MapSymbol = Symbol("Map");
 
 export type Map
-<I extends Iterator<any>, F extends (arg: IteratorItem<I>) => any> =
+<Iter extends Iterator<any>, Func extends (arg: IteratorItem<Iter>) => any> =
     & {
         type: symbol;
-        iterator: I;
-        func: F;
+        iterator: Iter;
+        func: Func;
     }
-    & Iterator<ReturnType<F>>
+    & Iterator<ReturnType<Func>>
 
 export namespace Map {
     export function create
-    <I extends Iterator<any>, F extends (arg: IteratorItem<I>) => any>
-    (iterator: I, func: F)
-    : Map<I, F> {
+    <
+        Iter extends Iterator<any>,
+        Func extends (arg: IteratorItem<Iter>) => any
+    >
+    (iterator: Iter, func: Func)
+    : Map<Iter, Func> {
         const self = {
             type: MapSymbol,
             iterator,
             func,
             [IteratorSymbol]: {
-                next(): Option<ReturnType<F>> {
+                next(): Option<ReturnType<Func>> {
                     const input = iterator[IteratorSymbol].next();
 
                     return Option.map(input, func);
                 },
-                map<F2 extends (arg: ReturnType<F>) => any>(fn: F2)
-                : Map<Iterator<ReturnType<F>>, F2> {
+                map<NewFunc extends (arg: ReturnType<Func>) => any>
+                (fn: NewFunc)
+                : Map<Iterator<ReturnType<Func>>, NewFunc> {
                     return Map.create(self, fn);
                 }
             }
