@@ -44,7 +44,7 @@ export namespace Option {
       variant: "Some",
       value,
       [IntoIteratorSymbol]: {
-        intoIter(): ConstIterator<[T]> {
+        intoIter(): ConstIterator<T> {
           return ConstIterator.create([value]);
         },
       },
@@ -59,7 +59,7 @@ export namespace Option {
       type: OptionSymbol,
       variant: "None",
       [IntoIteratorSymbol]: {
-        intoIter(): ConstIterator<T[]> {
+        intoIter(): ConstIterator<T> {
           return ConstIterator.create([]);
         },
       },
