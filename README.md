@@ -40,7 +40,7 @@ hematite
    |- mod.ts ------------- Types entrypoint, you can import from here
 |- utils
    |- function.ts -------- Function utilities
-   |- tuple.ts ----------- Tuple type utilities 
+   |- tuple.ts ----------- Tuple type utilities
 ```
 
 ## How to use it?
@@ -51,33 +51,32 @@ It's quite simple, really...
 
 ```typescript
 function nullableToOption<T>(value: T | null): Option<NonNullable<T>> {
-    if (value === null) {
-        return Option.None();
-    }
+  if (value === null) {
+    return Option.None();
+  }
 
-    return Option.Some(value);
+  return Option.Some(value);
 }
 
 // Option<number>
 const maybeNumber = nullableToOption(5);
 
 if (Option.isSome(maybeNumber)) {
-    console.log(maybeNumber.value * 2);
+  console.log(maybeNumber.value * 2);
 }
 ```
 
 ```typescript
-console.log(Option.map(Option.Some(5), n => n * 2));
+console.log(Option.map(Option.Some(5), (n) => n * 2));
 ```
 
 ## Who can contribute?
 
 Anyone who cares.
 
-If you are actively using the library (which I wouldn't
-recommend) and there are some things you want to see added, fixed or whatever,
-feel free to open an issue. I can't guarantee that it'll be taken care of
-though.
+If you are actively using the library (which I wouldn't recommend) and there are
+some things you want to see added, fixed or whatever, feel free to open an
+issue. I can't guarantee that it'll be taken care of though.
 
 If you are fixing or adding stuff and such on this library, and you want to
 share your amazing work with the users of this repo, consider opening a pull

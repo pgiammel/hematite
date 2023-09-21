@@ -9,8 +9,8 @@
  * // never
  * First<[]>
  */
-export type First<Tuple extends any[]> =
-    Tuple extends [infer First, ...infer Rest] ? First : never;
+export type First<Tuple extends any[]> = Tuple extends
+  [infer First, ...infer Rest] ? First : never;
 
 /**
  * Type of the Last element of Tuple
@@ -23,16 +23,17 @@ export type First<Tuple extends any[]> =
  * // never
  * Last<[]>
  */
-export type Last<Tuple extends any[]> =
-    Tuple extends [...infer Rest, infer Last] ? Last : never;
+export type Last<Tuple extends any[]> = Tuple extends
+  [...infer Rest, infer Last] ? Last : never;
 
-type _Drop
-<Tuple extends any[], Count extends number, Dropped extends any[] = []> =
-    Dropped['length'] extends Count
-        ? Tuple
-        : Tuple extends [infer First, ...infer Rest]
-            ? _Drop<Rest, Count, [...Dropped, First]>
-            : never;
+type _Drop<
+  Tuple extends any[],
+  Count extends number,
+  Dropped extends any[] = [],
+> = Dropped["length"] extends Count ? Tuple
+  : Tuple extends [infer First, ...infer Rest]
+    ? _Drop<Rest, Count, [...Dropped, First]>
+  : never;
 
 /**
  * Type of Tuple after Dropping a Count of elements. `never` if dropping more
@@ -46,15 +47,16 @@ type _Drop
  * // never
  * Drop<[1], 2>
  */
-export type Drop
-<Tuple extends any[], Count extends number> = _Drop<Tuple, Count>;
+export type Drop<Tuple extends any[], Count extends number> = _Drop<
+  Tuple,
+  Count
+>;
 
 type _Reverse<Tuple extends any[], Reversed extends any[] = []> =
-    Tuple['length'] extends 0
-        ? Reversed
-        : Tuple extends [infer First, ...infer Rest]
-            ? _Reverse<Rest, [First, ...Reversed]>
-            : never;
+  Tuple["length"] extends 0 ? Reversed
+    : Tuple extends [infer First, ...infer Rest]
+      ? _Reverse<Rest, [First, ...Reversed]>
+    : never;
 
 /**
  * Type of Tuple after Reversing its elements
@@ -63,4 +65,4 @@ type _Reverse<Tuple extends any[], Reversed extends any[] = []> =
  * // [3, 2, 1]
  * Reverse<[1, 2, 3]>
  */
-export type Reverse<Tuple extends any[]> = _Reverse<Tuple>
+export type Reverse<Tuple extends any[]> = _Reverse<Tuple>;
