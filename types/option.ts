@@ -157,4 +157,17 @@ export namespace Option {
 
         return Option.None();
     }
+
+    /**
+     * @returns `None` if `option` is `None`, otherwise calls `fn` with the
+     * wrapped value and returns the result
+     */
+    export function and_then<T, U>
+    (option: Option<T>, fn: (arg: T) => Option<U>): Option<U> {
+        if (Option.isSome(option)) {
+            return fn(option.value);
+        }
+
+        return Option.None();
+    }
 }

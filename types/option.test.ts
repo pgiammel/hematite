@@ -186,6 +186,52 @@ Deno.test("Option<T>", async (t) => {
         );
     });
 
+    await t.step("and_then", async (t) => {
+        await t.step("Option.Some(value) => func(value) <Option.Some>", () => {
+           const value = "Hello";
+           const func = (s: string) => Option.Some(s.length);
+           const result = Option.and_then(Option.Some(value), func);
+           const expected = func(value);
+
+           assertEquals(Option.isOption(result), true);
+           assertEquals(Option.isOption(expected), true);
+
+           const resultIsSome = Option.isSome(result);
+           const expectedIsSome = Option.isSome(expected);
+
+           assertEquals(resultIsSome, true);
+           assertEquals(expectedIsSome, true);
+           assertEquals(
+               resultIsSome && result.value,
+               expectedIsSome && expected.value
+           );
+        });
+
+        await t.step("Option.Some(value) => func(value) <Option.None>", () => {
+            const value = "Hello";
+            const func = (s: string) => Option.None<number>();
+            const result = Option.and_then(Option.Some(value), func);
+            const expected = func(value);
+
+            assertEquals(Option.isOption(result), true);
+            assertEquals(Option.isOption(expected), true);
+
+            const resultIsNone = Option.isNone(result);
+            const expectedIsNone = Option.isNone(expected);
+
+            assertEquals(resultIsNone, true);
+            assertEquals(expectedIsNone, true);
+        });
+
+        await t.step("Option.None => Option.None", () => {
+            const func = (s: string) => Option.None<number>();
+            const result = Option.and_then(Option.None<string>(), func);
+
+            assertEquals(Option.isOption(result), true);
+            assertEquals(Option.isNone(result), true);
+        });
+    });
+
     await t.step("IntoIterator trait", async (t) => {
         await t.step("intoIter", async (t) => {
             await t.step("Option.Some(value) => Iterator over [value]", () => {
