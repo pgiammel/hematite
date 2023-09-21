@@ -67,17 +67,17 @@ Deno.test("Option<T>", async (t) => {
     });
 
     await t.step("map", async (t) => {
-        await t.step("Option.Some => Option.Some", () => {
-            const innerValue = "Hello";
+        await t.step("Option.Some(value) => Option.Some(func(value))", () => {
+            const value = "Hello";
             const func = (s: string) => s.length;
-            const result = Option.map(Option.Some(innerValue), func);
+            const result = Option.map(Option.Some(value), func);
 
             assertEquals(Option.isOption(result), true);
 
             const isSome = Option.isSome(result);
 
             assertEquals(isSome, true);
-            assertEquals(isSome && result.value, func(innerValue));
+            assertEquals(isSome && result.value, func(value));
         })
 
         await t.step("Option.None => Option.None", () => {
