@@ -89,6 +89,25 @@ Deno.test("Option<T>", async (t) => {
         })
     });
 
+    await t.step("map_or", async (t) => {
+        await t.step("Option.Some(value) => func(value)", () => {
+            const value = "Hello";
+            const func = (s: string) => s.length;
+            const result = Option.map_or(Option.Some(value), 0, func);
+
+            assertEquals(result, func(value));
+        });
+
+        await t.step("Option.None => defaultValue", () => {
+            const defaultValue = 0;
+            const func = (s: string) => s.length;
+            const result =
+                Option.map_or(Option.None<string>(), defaultValue, func);
+
+            assertEquals(result, defaultValue);
+        });
+    });
+
     await t.step("IntoIterator trait", async (t) => {
         await t.step("intoIter", async (t) => {
             await t.step("Option.Some(value) => Iterator over [value]", () => {

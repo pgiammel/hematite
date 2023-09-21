@@ -120,4 +120,17 @@ export namespace Option {
 
         return Option.None();
     }
+
+    /**
+     * @returns `defaultValue` (if `option` is `None`), or applies a function
+     * to the contained value
+     */
+    export function map_or<T, U>
+    (option: Option<T>, defaultValue: U, fn: (arg: T) => U): U {
+        if (Option.isSome(option)) {
+            return fn(option.value);
+        }
+
+        return defaultValue;
+    }
 }
