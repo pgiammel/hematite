@@ -1,5 +1,7 @@
-import {assertEquals} from "../deps.ts";
+import {assertEquals, assertExists} from "../deps.ts";
 import {Option} from "./option.ts";
+import {IntoIteratorSymbol} from "../traits/into_iterator.ts";
+import {IteratorSymbol} from "../traits/iterator.ts";
 
 Deno.test("Option<T>", async (t) => {
     await t.step("isOption", async (t) => {
@@ -85,5 +87,43 @@ Deno.test("Option<T>", async (t) => {
             assertEquals(Option.isOption(result), true);
             assertEquals(Option.isNone(result), true);
         })
+    });
+
+    await t.step("IntoIterator trait", async (t) => {
+        await t.step("into_iter", async (t) => {
+            await t.step("Option.Some(value) => Iterator over [value]", () => {
+                const option = Option.Some(5);
+                const iter = option[IntoIteratorSymbol].into_iter();
+
+                assertExists(iter[IteratorSymbol]);
+
+                const firstItem = iter[IteratorSymbol].next();
+
+                assertEquals(Option.isOption(firstItem), true);
+
+                const firstItemIsSome = Option.isSome(firstItem);
+
+                assertEquals(firstItemIsSome, true);
+                assertEquals(firstItemIsSome && firstItem.value, 5);
+
+                const secondItem = iter[IteratorSymbol].next();
+
+                assertEquals(Option.isOption(secondItem), true);
+                assertEquals(Option.isNone(secondItem), true);
+            });
+
+            // check that it returns an iterator that will yield no items
+            await t.step("Option.None => Iterator over []", () => {
+                const option = Option.None<number>();
+                const iter = option[IntoIteratorSymbol].into_iter();
+
+                assertExists(iter[IteratorSymbol]);
+
+                const item = iter[IteratorSymbol].next();
+
+                assertEquals(Option.isOption(item), true);
+                assertEquals(Option.isNone(item), true);
+            })
+        });
     });
 });
