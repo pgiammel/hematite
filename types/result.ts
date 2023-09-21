@@ -33,7 +33,7 @@ export namespace Result {
             variant: "Ok",
             data,
             [IntoIteratorSymbol]: {
-                into_iter(): Iterator<T> {
+                intoIter(): Iterator<T> {
                     return ConstIterator.create([data]);
                 }
             }
@@ -49,7 +49,7 @@ export namespace Result {
             variant: "Err",
             error,
             [IntoIteratorSymbol]: {
-                into_iter(): Iterator<T> {
+                intoIter(): Iterator<T> {
                     return ConstIterator.create([]);
                 }
             }

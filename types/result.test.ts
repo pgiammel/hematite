@@ -97,10 +97,10 @@ Deno.test("Result<T, E>", async (t) => {
     });
 
     await t.step("IntoIterator trait", async (t) => {
-        await t.step("into_iter", async (t) => {
+        await t.step("intoIter", async (t) => {
             await t.step("Result.Ok(data) => Iterator over [data]", () => {
                 const result = Result.Ok(5);
-                const iter = result[IntoIteratorSymbol].into_iter();
+                const iter = result[IntoIteratorSymbol].intoIter();
 
                 assertExists(iter[IteratorSymbol]);
 
@@ -124,7 +124,7 @@ Deno.test("Result<T, E>", async (t) => {
             // check that it returns an iterator that will yield no items
             await t.step("Result.Err => Iterator over []", () => {
                 const result = Result.Err("Error");
-                const iter = result[IntoIteratorSymbol].into_iter();
+                const iter = result[IntoIteratorSymbol].intoIter();
 
                 assertExists(iter[IteratorSymbol]);
 

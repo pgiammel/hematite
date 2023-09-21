@@ -90,10 +90,10 @@ Deno.test("Option<T>", async (t) => {
     });
 
     await t.step("IntoIterator trait", async (t) => {
-        await t.step("into_iter", async (t) => {
+        await t.step("intoIter", async (t) => {
             await t.step("Option.Some(value) => Iterator over [value]", () => {
                 const option = Option.Some(5);
-                const iter = option[IntoIteratorSymbol].into_iter();
+                const iter = option[IntoIteratorSymbol].intoIter();
 
                 assertExists(iter[IteratorSymbol]);
 
@@ -115,7 +115,7 @@ Deno.test("Option<T>", async (t) => {
             // check that it returns an iterator that will yield no items
             await t.step("Option.None => Iterator over []", () => {
                 const option = Option.None<number>();
-                const iter = option[IntoIteratorSymbol].into_iter();
+                const iter = option[IntoIteratorSymbol].intoIter();
 
                 assertExists(iter[IteratorSymbol]);
 

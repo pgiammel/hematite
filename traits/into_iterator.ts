@@ -6,13 +6,13 @@ export type IntoIteratorItem<I extends IntoIterator<unknown>> =
     I extends IntoIterator<infer T> ? T : never;
 export interface IntoIterator<T> {
     [IntoIteratorSymbol]: {
-        into_iter(): Iterator<T>;
+        intoIter(): Iterator<T>;
     }
 }
 
 export namespace IntoIterator {
-    export function into_iter<T extends IntoIterator<any>>(obj: T)
+    export function intoIter<T extends IntoIterator<any>>(obj: T)
     : Iterator<IntoIteratorItem<T>> {
-        return obj[IntoIteratorSymbol].into_iter();
+        return obj[IntoIteratorSymbol].intoIter();
     }
 }
