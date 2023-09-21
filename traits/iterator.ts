@@ -42,25 +42,15 @@ export namespace Iterator {
   }
 
   /**
-   * Create a native `globalThis.Iterable<T>` from an `Iterator<T>`
+   * Create a native `globalThis.IterableIterator<T>` from an `Iterator<T>`
    */
-  export function nativeIterable<T>(
+  export function* nativeIterableIterator<T>(
     iterator: Iterator<T>,
-  ): globalThis.Iterable<T> {
-    return {
-      [Symbol.iterator](): globalThis.Iterator<T> {
-        return {
-          next(): globalThis.IteratorResult<T, void> {
-            const item = iterator[IteratorSymbol].next();
+  ): globalThis.IterableIterator<T> {
+    let item: Option<T>;
 
-            if (Option.isSome(item)) {
-              return { done: false, value: item.value };
-            }
-
-            return { done: true, value: undefined };
-          },
-        };
-      },
-    };
+    while (Option.isSome(item = iterator[IteratorSymbol].next())) {
+      yield item.value;
+    }
   }
 }
