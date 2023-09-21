@@ -40,4 +40,27 @@ export namespace Iterator {
   >(iterator: I, fn: F): Map<Iterator<IteratorItem<I>>, F> {
     return iterator[IteratorSymbol].map(fn);
   }
+
+  /**
+   * Create a native `globalThis.Iterable<T>` from an `Iterator<T>`
+   */
+  export function nativeIterable<T>(
+    iterator: Iterator<T>,
+  ): globalThis.Iterable<T> {
+    return {
+      [Symbol.iterator](): globalThis.Iterator<T> {
+        return {
+          next(): globalThis.IteratorResult<T, void> {
+            const item = iterator[IteratorSymbol].next();
+
+            if (Option.isSome(item)) {
+              return { done: false, value: item.value };
+            }
+
+            return { done: true, value: undefined };
+          },
+        };
+      },
+    };
+  }
 }
