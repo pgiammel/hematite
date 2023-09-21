@@ -209,7 +209,6 @@ Deno.test("Option<T>", async (t) => {
                 assertEquals(Option.isNone(secondItem), true);
             });
 
-            // check that it returns an iterator that will yield no items
             await t.step("Option.None => Iterator over []", () => {
                 const option = Option.None<number>();
                 const iter = option[IntoIteratorSymbol].intoIter();
