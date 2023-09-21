@@ -9,6 +9,23 @@ export const OptionSymbol = Symbol("Option");
 
 export type OptionItem<O extends Option<any>> =
     O extends Option<infer T> ? T : never;
+
+/**
+ * Type `Option` represents an optional value: ever `Option` is either `Some`
+ * and contains a value, or `None`, and does not. `Option` types have a number
+ * of uses:
+ *
+ * - Initial values
+ * - Return values for functions that are not defined over their entire input
+ * range (partial functions)
+ * - Return values for otherwise reporting simple errors, where `None` is
+ * returned on error
+ * - Optional struct fields
+ * - Struct fields that can be loaned or "taken"
+ * - Optional function arguments
+ * - Nullable pointers
+ * - Swapping things out of difficult situations
+ */
 export type Option<T> =
     & { type: symbol }
     & (
@@ -18,6 +35,9 @@ export type Option<T> =
     & IntoIterator<T>;
 
 export namespace Option {
+    /**
+     * Create a `Some` variant of `Option`, meant to hold some value
+     */
     export function Some<T>(value: T): Option<T> {
         return {
             type: OptionSymbol,
@@ -31,6 +51,9 @@ export namespace Option {
         };
     }
 
+    /**
+     * Create a `None` variant of `Option`, representing the absence of value
+     */
     export function None<T>(): Option<T> {
         return {
             type: OptionSymbol,
@@ -44,7 +67,7 @@ export namespace Option {
     }
 
     /**
-     * @returns Whether `maybeOption` is an Option<T>
+     * @returns Whether `maybeOption` is an `Option`
      */
     export function isOption(maybeOption: unknown)
     : maybeOption is Option<unknown> {
@@ -56,7 +79,7 @@ export namespace Option {
     }
 
     /**
-     * @returns Whether `option` is a Some variant of Option<T>
+     * @returns Whether `option` is a `Some` variant of `Option`
      * @see Option.Some
      */
     export function isSome<T>(option: Option<T>)
@@ -65,7 +88,7 @@ export namespace Option {
     }
 
     /**
-     * @returns Whether `option` is a None variant of Option<T>
+     * @returns Whether `option` is a `None` variant of `Option`
      * @see Option.None
      */
     export function isNone<T>(option: Option<T>)
@@ -74,11 +97,11 @@ export namespace Option {
     }
 
     /**
-     * Map an Option on one type to an Option on another by applying a function
-     * to the inner value if it's a Some variant.
-     * @param option Option to map from
-     * @param fn Mapping function
-     * @returns Mapped Option
+     * Map an `Option` on one type to an `Option` on another by applying a
+     * function to the inner value if it's a `Some` variant.
+     * @param option `Option` to map from
+     * @param fn Mapping `function`
+     * @returns Mapped `Option`
      *
      * @example
      * // Option<string>
