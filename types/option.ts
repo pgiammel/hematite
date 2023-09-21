@@ -133,4 +133,17 @@ export namespace Option {
 
         return defaultValue;
     }
+
+    /**
+     * Computes a default function result (if `option` is `None`), or applies a
+     * different function to the contained value
+     */
+    export function map_or_else<T, U>
+    (option: Option<T>, defaultFn: () => U, mapFn: (arg: T) => U): U {
+        if (Option.isSome(option)) {
+            return mapFn(option.value);
+        }
+
+        return defaultFn();
+    }
 }
