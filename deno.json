@@ -1,4 +1,10 @@
 {
   "importMap": "./import_map.json",
-  "tasks": {}
+  "tasks": {},
+  "lint": {
+    "rules": {
+      "tags": ["recommended"],
+      "exclude": ["no-namespace"]
+    }
+  }
 }
