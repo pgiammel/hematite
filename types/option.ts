@@ -181,4 +181,15 @@ export namespace Option {
 
     return Option.None();
   }
+
+  /**
+   * @return `lhs` if it is not `None`, otherwise return `rhs`
+   */
+  export function or<T>(lhs: Option<T>, rhs: Option<T>): Option<T> {
+    if (Option.isSome(lhs)) {
+      return lhs;
+    }
+
+    return rhs;
+  }
 }

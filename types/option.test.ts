@@ -241,6 +241,52 @@ Deno.test("Option<T>", async (t) => {
     });
   });
 
+  await t.step("or", async (t) => {
+    await t.step("Option.Some(value), Option.Some(otherValue) => Option.Some(value)", () => {
+      const value = "Hello";
+      const otherValue = "World";
+      const result = Option.or(Option.Some(value), Option.Some(otherValue));
+
+      assertEquals(Option.isOption(result), true);
+
+      const isSome = Option.isSome(result);
+
+      assertEquals(isSome, true);
+      assertEquals(isSome && result.value, value);
+    });
+
+    await t.step("Option.Some(value), Option.None => Option.Some(value)", () => {
+      const value = "Hello";
+      const result = Option.or(Option.Some(value), Option.None());
+
+      assertEquals(Option.isOption(result), true);
+
+      const isSome = Option.isSome(result);
+
+      assertEquals(isSome, true);
+      assertEquals(isSome && result.value, value);
+    });
+
+    await t.step("Option.None, Option.Some(otherValue) => Option.Some(otherValue)", () => {
+      const otherValue = "World";
+      const result = Option.or(Option.None(), Option.Some(otherValue));
+
+      assertEquals(Option.isOption(result), true);
+
+      const isSome = Option.isSome(result);
+
+      assertEquals(isSome, true);
+      assertEquals(isSome && result.value, otherValue);
+    });
+
+    await t.step("Option.None, Option.None => Option.None", () => {
+      const result = Option.or(Option.None(), Option.None());
+
+      assertEquals(Option.isOption(result), true);
+      assertEquals(Option.isNone(result), true);
+    });
+  });
+
   await t.step("IntoIterator trait", async (t) => {
     await t.step("intoIter", async (t) => {
       await t.step("Option.Some(value) => Iterator over [value]", () => {
