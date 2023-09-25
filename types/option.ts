@@ -223,4 +223,17 @@ export namespace Option {
 
     return Option.None();
   }
+
+  /**
+   * Zip two `Option`s together.
+   * @returns `Option<[T, U]>` if both `lhs` and `rhs` are `Some`, otherwise
+   * `None`
+   */
+  export function zip<T, U>(lhs: Option<T>, rhs: Option<U>): Option<[T, U]> {
+    if (Option.isSome(lhs) && Option.isSome(rhs)) {
+      return Option.Some([lhs.value, rhs.value]);
+    }
+
+    return Option.None();
+  }
 }
