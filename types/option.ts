@@ -192,4 +192,16 @@ export namespace Option {
 
     return rhs;
   }
+
+  /**
+   * @returns `option` if it is not `None`, otherwise call `fn` and return the
+   * result
+   */
+  export function or_else<T>(option: Option<T>, fn: () => Option<T>): Option<T> {
+    if (Option.isSome(option)) {
+      return option;
+    }
+
+    return fn();
+  }
 }
