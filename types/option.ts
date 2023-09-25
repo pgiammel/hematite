@@ -204,4 +204,20 @@ export namespace Option {
 
     return fn();
   }
+
+  /**
+   * @returns `lhs` if only `lhs` is `Some`, `rhs` if only `rhs` is `Some`,
+   * otherwise returns `None`
+   */
+  export function xor<T>(lhs: Option<T>, rhs: Option<T>): Option<T> {
+    if (Option.isSome(lhs) && Option.isNone(rhs)) {
+      return lhs;
+    }
+
+    if (Option.isNone(lhs) && Option.isSome(rhs)) {
+      return rhs;
+    }
+
+    return Option.None();
+  }
 }
