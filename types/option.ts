@@ -236,4 +236,20 @@ export namespace Option {
 
     return Option.None();
   }
+
+  /**
+   * Unzips an `Option` containing a tuple of two options.
+   * @returns `[Some<T>, Some<U>]` if `option` is `Some<[T, U]>`, otherwise
+   * `[None<T>, None<U>]`
+   */
+  export function unzip<T, U>(option: Option<[T, U]>): [Option<T>, Option<U>] {
+    if (Option.isSome(option)) {
+      return [
+        Option.Some(option.value[0]),
+        Option.Some(option.value[1]),
+      ];
+    }
+
+    return [Option.None(), Option.None()];
+  }
 }

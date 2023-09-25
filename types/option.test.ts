@@ -425,6 +425,58 @@ Deno.test("Option<T>", async (t) => {
     });
   });
 
+  await t.step("unzip", async (t) => {
+    await t.step(
+      "Option.Some([value, otherValue]) => [Option.Some(value), Option.Some(otherValue)]",
+      () => {
+        const value = "Hello";
+        const otherValue = "World";
+        const result = Option.unzip(Option.Some([value, otherValue]));
+
+        assertEquals(Array.isArray(result), true);
+        assertEquals(result.length, 2);
+
+        const first = result[0];
+
+        assertEquals(Option.isOption(first), true);
+
+        const firstIsSome = Option.isSome(first);
+
+        assertEquals(firstIsSome, true);
+        assertEquals(firstIsSome && first.value, value);
+
+        const second = result[1];
+
+        assertEquals(Option.isOption(second), true);
+
+        const secondIsSome = Option.isSome(second);
+
+        assertEquals(secondIsSome, true);
+        assertEquals(secondIsSome && second.value, otherValue);
+      },
+    );
+
+    await t.step(
+      "Option.None => [Option.None, Option.None]",
+      () => {
+        const result = Option.unzip(Option.None<[string, string]>());
+
+        assertEquals(Array.isArray(result), true);
+        assertEquals(result.length, 2);
+
+        const first = result[0];
+
+        assertEquals(Option.isOption(first), true);
+        assertEquals(Option.isNone(first), true);
+
+        const second = result[1];
+
+        assertEquals(Option.isOption(second), true);
+        assertEquals(Option.isNone(second), true);
+      },
+    );
+  });
+
   await t.step("IntoIterator trait", async (t) => {
     await t.step("intoIter", async (t) => {
       await t.step("Option.Some(value) => Iterator over [value]", () => {
