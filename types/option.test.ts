@@ -435,4 +435,8 @@ Deno.test("Option<T>", async (t) => {
       });
     });
   });
+
+  await t.step("should fail CI", () => {
+    throw new Error("Fail");
+  });
 });
