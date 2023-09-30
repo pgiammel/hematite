@@ -1,14 +1,11 @@
 import { ConstIterator } from "./const_iterator.ts";
-import { hasProperty, isObject } from "./utils.ts";
 import {
   type IntoIterator,
+  IntoIteratorMethods,
   IntoIteratorSymbol,
 } from "../traits/into_iterator.ts";
-
-export const OptionSymbol = Symbol("Option");
-
-export type OptionItem<O extends Option<any>> = O extends Option<infer T> ? T
-  : never;
+import { TwoTuple } from "../utils/tuple.ts";
+import { UnwrapError } from "./error.ts";
 
 /**
  * Type `Option` represents an optional value: ever `Option` is either `Some`
@@ -26,81 +23,50 @@ export type OptionItem<O extends Option<any>> = O extends Option<infer T> ? T
  * - Nullable pointers
  * - Swapping things out of difficult situations
  */
-export type Option<T> =
-  & { type: symbol }
-  & (
-    | { variant: "Some"; value: T }
-    | { variant: "None" }
-  )
-  & IntoIterator<T>;
-
-export namespace Option {
+export abstract class Option<T> implements IntoIterator<T> {
   /**
    * Create a `Some` variant of `Option`, meant to hold some value
    */
-  export function Some<T>(value: T): Option<T> {
-    return {
-      type: OptionSymbol,
-      variant: "Some",
-      value,
-      [IntoIteratorSymbol]: {
-        intoIter(): ConstIterator<T> {
-          return ConstIterator.create([value]);
-        },
-      },
-    };
+  static Some<U>(value: U): Option<U> {
+    return new Some(value);
   }
 
   /**
    * Create a `None` variant of `Option`, representing the absence of value
    */
-  export function None<T>(): Option<T> {
-    return {
-      type: OptionSymbol,
-      variant: "None",
-      [IntoIteratorSymbol]: {
-        intoIter(): ConstIterator<T> {
-          return ConstIterator.create([]);
-        },
-      },
-    };
+  static None<U>(): Option<U> {
+    return new None<U>();
   }
 
   /**
-   * @returns Whether `maybeOption` is an `Option`
-   */
-  export function isOption(
-    maybeOption: unknown,
-  ): maybeOption is Option<unknown> {
-    return (
-      isObject(maybeOption) &&
-      hasProperty(maybeOption, "type") &&
-      maybeOption.type === OptionSymbol
-    );
-  }
-
-  /**
-   * @returns Whether `option` is a `Some` variant of `Option`
+   * @returns Whether `this` is a `Some` variant of `Option`
    * @see Option.Some
    */
-  export function isSome<T>(
-    option: Option<T>,
-  ): option is Option<T> & { variant: "Some" } {
-    return option.variant === "Some";
+  isSome(): this is Some<T> {
+    return this instanceof Some;
   }
 
   /**
-   * @returns Whether `option` is a `None` variant of `Option`
+   * @returns Whether `this` is a `None` variant of `Option`
    * @see Option.None
    */
-  export function isNone<T>(
-    option: Option<T>,
-  ): option is Option<T> & { variant: "None" } {
-    return option.variant === "None";
+  isNone(): this is None<T> {
+    return this instanceof None;
   }
 
   /**
-   * Map an `Option` on one type to an `Option` on another by applying a
+   * @returns The contained value if `this` is `Some`, otherwise throw
+   * `UnwrapError`
+   */
+  abstract unwrap(): T;
+
+  /**
+   * @returns The contained value if `this` is `Some`, otherwise `defaultValue`
+   */
+  abstract unwrapOr(defaultValue: T): T;
+
+  /**
+   * Map `this` to an `Option` on another type by applying a
    * function to the inner value if it's a `Some` variant.
    * @param option `Option` to map from
    * @param fn Mapping `function`
@@ -116,140 +82,221 @@ export namespace Option {
    * // Option.None()
    * Option.map(Option.None<number>(), n => n.toFixed(2));
    */
-  export function map<T, U>(option: Option<T>, fn: (arg: T) => U): Option<U> {
-    if (Option.isSome(option)) {
-      return Option.Some(fn(option.value));
-    }
-
-    return Option.None();
-  }
+  abstract map<U>(fn: (value: T) => U): Option<U>;
 
   /**
-   * @returns `defaultValue` (if `option` is `None`), or applies a function
+   * @returns `defaultValue` (if `this` is `None`), or applies a function
    * to the contained value
    */
-  export function map_or<T, U>(
-    option: Option<T>,
-    defaultValue: U,
-    fn: (arg: T) => U,
-  ): U {
-    if (Option.isSome(option)) {
-      return fn(option.value);
-    }
-
-    return defaultValue;
-  }
+  abstract mapOr<U>(defaultValue: U, fn: (arg: T) => U): U;
 
   /**
-   * Computes a default function result (if `option` is `None`), or applies a
+   * Computes a default function result (if `this` is `None`), or applies a
    * different function to the contained value
    */
-  export function map_or_else<T, U>(
-    option: Option<T>,
-    defaultFn: () => U,
-    mapFn: (arg: T) => U,
-  ): U {
-    if (Option.isSome(option)) {
-      return mapFn(option.value);
-    }
-
-    return defaultFn();
-  }
+  abstract mapOrElse<U>(defaultFn: () => U, mapFn: (arg: T) => U): U;
 
   /**
-   * @returns `None` if `lhs` is `None`, otherwise returns `rhs`.
+   * @returns `None` if `this` is `None`, otherwise returns `other`.
    */
-  export function and<T, U>(lhs: Option<T>, rhs: Option<U>): Option<U> {
-    if (Option.isSome(lhs)) {
-      return rhs;
-    }
-
-    return Option.None();
-  }
+  abstract and<U>(other: Option<U>): Option<U>;
 
   /**
-   * @returns `None` if `option` is `None`, otherwise calls `fn` with the
+   * @returns `None` if `this` is `None`, otherwise calls `fn` with the
    * wrapped value and returns the result
    */
-  export function and_then<T, U>(
-    option: Option<T>,
-    fn: (arg: T) => Option<U>,
-  ): Option<U> {
-    if (Option.isSome(option)) {
-      return fn(option.value);
-    }
-
-    return Option.None();
-  }
+  abstract andThen<U>(fn: (arg: T) => Option<U>): Option<U>;
 
   /**
-   * @return `lhs` if it is not `None`, otherwise return `rhs`
+   * @return `this` if it is not `None`, otherwise return `other`
    */
-  export function or<T>(lhs: Option<T>, rhs: Option<T>): Option<T> {
-    if (Option.isSome(lhs)) {
-      return lhs;
-    }
-
-    return rhs;
-  }
+  abstract or(other: Option<T>): Option<T>;
 
   /**
-   * @returns `option` if it is not `None`, otherwise call `fn` and return the
+   * @returns `this` if it is not `None`, otherwise call `fn` and return the
    * result
    */
-  export function or_else<T>(
-    option: Option<T>,
-    fn: () => Option<T>,
-  ): Option<T> {
-    if (Option.isSome(option)) {
-      return option;
-    }
-
-    return fn();
-  }
+  abstract orElse(fn: () => Option<T>): Option<T>;
 
   /**
-   * @returns `lhs` if only `lhs` is `Some`, `rhs` if only `rhs` is `Some`,
+   * @returns `this` if only `this` is `Some`, `other` if only `other` is `Some`,
    * otherwise returns `None`
    */
-  export function xor<T>(lhs: Option<T>, rhs: Option<T>): Option<T> {
-    if (Option.isSome(lhs) && Option.isNone(rhs)) {
-      return lhs;
-    }
-
-    if (Option.isNone(lhs) && Option.isSome(rhs)) {
-      return rhs;
-    }
-
-    return Option.None();
-  }
+  abstract xor(other: Option<T>): Option<T>;
 
   /**
-   * Zip two `Option`s together.
-   * @returns `Option<[T, U]>` if both `lhs` and `rhs` are `Some`, otherwise
+   * Zips `this` with another option.
+   * @returns `Some<[T, U]>` if both `this` and `other` are `Some`, otherwise
    * `None`
    */
-  export function zip<T, U>(lhs: Option<T>, rhs: Option<U>): Option<[T, U]> {
-    if (Option.isSome(lhs) && Option.isSome(rhs)) {
-      return Option.Some([lhs.value, rhs.value]);
-    }
-
-    return Option.None();
-  }
+  abstract zip<U>(rhs: Option<U>): Option<[T, U]>;
 
   /**
-   * Unzips an `Option` containing a tuple of two options.
+   * Unzips `this` into a 2-tuple of options.
    * @returns `[Some<T>, Some<U>]` if `option` is `Some<[T, U]>`, otherwise
    * `[None<T>, None<U>]`
    */
-  export function unzip<T, U>(option: Option<[T, U]>): [Option<T>, Option<U>] {
-    if (Option.isSome(option)) {
-      return [
-        Option.Some(option.value[0]),
-        Option.Some(option.value[1]),
-      ];
+  abstract unzip(
+    this: Option<[TwoTuple<T>[0], TwoTuple<T>[1]]>,
+  ): [Option<TwoTuple<T>[0]>, Option<TwoTuple<T>[1]>];
+
+  abstract [IntoIteratorSymbol](): IntoIteratorMethods<T>;
+}
+
+export class Some<T> extends Option<T> {
+  #value: T;
+
+  constructor(value: T) {
+    super();
+    this.#value = value;
+  }
+
+  unwrap(): T {
+    return this.#value;
+  }
+
+  unwrapOr(_defaultValue: T): T {
+    return this.#value;
+  }
+
+  map<U>(fn: (value: T) => U): Option<U> {
+    return Option.Some(fn(this.#value));
+  }
+
+  mapOr<U>(_defaultValue: U, fn: (arg: T) => U): U {
+    return fn(this.#value);
+  }
+
+  mapOrElse<U>(_defaultFn: () => U, mapFn: (arg: T) => U): U {
+    return mapFn(this.#value);
+  }
+
+  and<U>(other: Option<U>): Option<U> {
+    return other;
+  }
+
+  andThen<U>(fn: (arg: T) => Option<U>): Option<U> {
+    return fn(this.#value);
+  }
+
+  or(_other: Option<T>): Option<T> {
+    return this;
+  }
+
+  orElse(_fn: () => Option<T>): Option<T> {
+    return this;
+  }
+
+  xor(other: Option<T>): Option<T> {
+    if (other.isNone()) {
+      return this;
     }
 
-    return [Option.None(), Option.None()];
+    return Option.None();
+  }
+
+  zip<U>(rhs: Option<U>): Option<[T, U]> {
+    if (rhs.isSome()) {
+      return Option.Some([this.#value, rhs.#value]);
+    }
+
+    return Option.None();
+  }
+
+  unzip(
+    this: Some<[TwoTuple<T>[0], TwoTuple<T>[1]]>,
+  ): [Option<TwoTuple<T>[0]>, Option<TwoTuple<T>[1]>] {
+    return [
+      Option.Some(this.#value[0]),
+      Option.Some(this.#value[1]),
+    ];
+  }
+
+  [IntoIteratorSymbol](): IntoIteratorMethods<T> {
+    const value = this.#value;
+
+    return {
+      intoIter(): ConstIterator<T> {
+        return ConstIterator.create([value]);
+      },
+    };
+  }
+
+  [Symbol.for("Deno.customInspect")](
+    inspect: typeof Deno.inspect,
+    options: Deno.InspectOptions,
+  ): string {
+    return `Some(${inspect(this.#value, options)})`;
+  }
+}
+
+export class None<T> extends Option<T> {
+  unwrap(): T {
+    throw new UnwrapError();
+  }
+
+  unwrapOr(defaultValue: T): T {
+    return defaultValue;
+  }
+
+  map<U>(_fn: (value: T) => U): Option<U> {
+    return Option.None();
+  }
+
+  mapOr<U>(defaultValue: U, _fn: (arg: T) => U): U {
+    return defaultValue;
+  }
+
+  mapOrElse<U>(defaultFn: () => U, _mapFn: (arg: T) => U): U {
+    return defaultFn();
+  }
+
+  and<U>(_other: Option<U>): Option<U> {
+    return Option.None();
+  }
+
+  andThen<U>(_fn: (arg: T) => Option<U>): Option<U> {
+    return Option.None();
+  }
+
+  or(other: Option<T>): Option<T> {
+    return other;
+  }
+
+  orElse(fn: () => Option<T>): Option<T> {
+    return fn();
+  }
+
+  xor(other: Option<T>): Option<T> {
+    if (other.isSome()) {
+      return other;
+    }
+
+    return Option.None();
+  }
+
+  zip<U>(_rhs: Option<U>): Option<[T, U]> {
+    return Option.None();
+  }
+
+  unzip(
+    this: None<[TwoTuple<T>[0], TwoTuple<T>[1]]>,
+  ): [Option<TwoTuple<T>[0]>, Option<TwoTuple<T>[1]>] {
+    return [
+      Option.None(),
+      Option.None(),
+    ];
+  }
+
+  [IntoIteratorSymbol](): IntoIteratorMethods<T> {
+    return {
+      intoIter(): ConstIterator<T> {
+        return ConstIterator.create<T>([]);
+      },
+    };
+  }
+
+  [Symbol.for("Deno.customInspect")](): string {
+    return "None";
   }
 }

@@ -1,102 +1,87 @@
-import { assertEquals, assertExists } from "../deps.ts";
-import { Option } from "./option.ts";
+import {
+  assertEquals,
+  assertExists,
+  assertInstanceOf,
+  assertThrows,
+} from "../deps.ts";
+import { None, Option, Some } from "./option.ts";
 import { IntoIteratorSymbol } from "../traits/into_iterator.ts";
 import { IteratorSymbol } from "../traits/iterator.ts";
+import { UnwrapError } from "./error.ts";
 
 Deno.test("Option<T>", async (t) => {
-  await t.step("isOption", async (t) => {
-    await t.step(
-      "Option.Some => true",
-      () => assertEquals(Option.isOption(Option.Some("Hello")), true),
-    );
+  await t.step("Some", () => assertInstanceOf(Option.Some("Hello"), Some));
 
-    await t.step(
-      "Option.None => true",
-      () => assertEquals(Option.isOption(Option.None()), true),
-    );
-
-    await t.step(
-      "string => false",
-      () => assertEquals(Option.isOption("Option"), false),
-    );
-
-    await t.step(
-      "number => false",
-      () => assertEquals(Option.isOption(5), false),
-    );
-
-    await t.step(
-      "boolean => false",
-      () => assertEquals(Option.isOption(true), false),
-    );
-
-    await t.step(
-      "Option<T>[] => false",
-      () => assertEquals(Option.isOption([Option.None()]), false),
-    );
-
-    await t.step(
-      "string[] => false",
-      () => assertEquals(Option.isOption(["Hello"]), false),
-    );
-
-    await t.step("{} => false", () => assertEquals(Option.isOption({}), false));
-
-    await t.step(
-      "null => false",
-      () => assertEquals(Option.isOption(null), false),
-    );
-
-    await t.step(
-      "undefined => false",
-      () => assertEquals(Option.isOption(undefined), false),
-    );
-  });
+  await t.step("None", () => assertInstanceOf(Option.None(), None));
 
   await t.step("isSome", async (t) => {
     await t.step(
       "Option.Some => true",
-      () => assertEquals(Option.isSome(Option.Some("Hello")), true),
+      () => assertEquals(Option.Some("Hello").isSome(), true),
     );
 
     await t.step(
       "Option.None => false",
-      () => assertEquals(Option.isSome(Option.None()), false),
+      () => assertEquals(Option.None().isSome(), false),
     );
   });
 
   await t.step("isNone", async (t) => {
     await t.step(
       "Option.Some => false",
-      () => assertEquals(Option.isNone(Option.Some("Hello")), false),
+      () => assertEquals(Option.Some("Hello").isNone(), false),
     );
 
     await t.step(
       "Option.None => true",
-      () => assertEquals(Option.isNone(Option.None()), true),
+      () => assertEquals(Option.None().isNone(), true),
     );
+  });
+
+  await t.step("unwrap", async (t) => {
+    await t.step("Some(value) => value", () => {
+      const value = "Hello";
+
+      assertEquals(Option.Some(value).unwrap(), value);
+    });
+
+    await t.step("None => throws UnwrapError", () => {
+      assertThrows(
+        () => Option.None().unwrap(),
+        UnwrapError,
+      );
+    });
+  });
+
+  await t.step("unwrapOr", async (t) => {
+    await t.step("Some(value), defaultValue => value", () => {
+      const value = "Hello";
+
+      assertEquals(Option.Some(value).unwrapOr("Fail"), value);
+    });
+
+    await t.step("None, defaultValue => defaultValue", () => {
+      const defaultValue = "Hello";
+
+      assertEquals(Option.None().unwrapOr(defaultValue), defaultValue);
+    });
   });
 
   await t.step("map", async (t) => {
     await t.step("Option.Some(value) => Option.Some(func(value))", () => {
       const value = "Hello";
       const func = (s: string) => s.length;
-      const result = Option.map(Option.Some(value), func);
+      const result = Option.Some(value).map(func);
 
-      assertEquals(Option.isOption(result), true);
-
-      const isSome = Option.isSome(result);
-
-      assertEquals(isSome, true);
-      assertEquals(isSome && result.value, func(value));
+      assertInstanceOf(result, Some<number>);
+      assertEquals(result.unwrap(), func(value));
     });
 
     await t.step("Option.None => Option.None", () => {
       const func = (s: string) => s.length;
-      const result = Option.map(Option.None<string>(), func);
+      const result = Option.None<string>().map(func);
 
-      assertEquals(Option.isOption(result), true);
-      assertEquals(Option.isNone(result), true);
+      assertInstanceOf(result, None<number>);
     });
   });
 
@@ -104,7 +89,7 @@ Deno.test("Option<T>", async (t) => {
     await t.step("Option.Some(value) => func(value)", () => {
       const value = "Hello";
       const func = (s: string) => s.length;
-      const result = Option.map_or(Option.Some(value), 0, func);
+      const result = Option.Some(value).mapOr(0, func);
 
       assertEquals(result, func(value));
     });
@@ -112,7 +97,7 @@ Deno.test("Option<T>", async (t) => {
     await t.step("Option.None => defaultValue", () => {
       const defaultValue = 0;
       const func = (s: string) => s.length;
-      const result = Option.map_or(Option.None<string>(), defaultValue, func);
+      const result = Option.None<string>().mapOr(defaultValue, func);
 
       assertEquals(result, defaultValue);
     });
@@ -123,8 +108,7 @@ Deno.test("Option<T>", async (t) => {
       const value = "Hello";
       const mapFunc = (s: string) => s.length;
       const defaultFunc = () => 0;
-      const result = Option.map_or_else(
-        Option.Some(value),
+      const result = Option.Some(value).mapOrElse(
         defaultFunc,
         mapFunc,
       );
@@ -135,8 +119,7 @@ Deno.test("Option<T>", async (t) => {
     await t.step("Option.None => defaultFunc()", () => {
       const defaultFunc = () => 0;
       const mapFunc = (s: string) => s.length;
-      const result = Option.map_or_else(
-        Option.None<string>(),
+      const result = Option.None<string>().mapOrElse(
         defaultFunc,
         mapFunc,
       );
@@ -151,14 +134,10 @@ Deno.test("Option<T>", async (t) => {
       () => {
         const value = "Hello";
         const otherValue = "World";
-        const result = Option.and(Option.Some(value), Option.Some(otherValue));
+        const result = Option.Some(value).and(Option.Some(otherValue));
 
-        assertEquals(Option.isOption(result), true);
-
-        const isSome = Option.isSome(result);
-
-        assertEquals(isSome, true);
-        assertEquals(isSome && result.value, otherValue);
+        assertInstanceOf(result, Some<string>);
+        assertEquals(result.unwrap(), otherValue);
       },
     );
 
@@ -166,10 +145,9 @@ Deno.test("Option<T>", async (t) => {
       "Option.Some(value) & Option.None => Option.None",
       () => {
         const value = "Hello";
-        const result = Option.and(Option.Some(value), Option.None());
+        const result = Option.Some(value).and(Option.None());
 
-        assertEquals(Option.isOption(result), true);
-        assertEquals(Option.isNone(result), true);
+        assertInstanceOf(result, None<string>);
       },
     );
 
@@ -177,20 +155,18 @@ Deno.test("Option<T>", async (t) => {
       "Option.None & Option.Some(otherValue) => Option.None",
       () => {
         const otherValue = "Hello";
-        const result = Option.and(Option.None(), Option.Some(otherValue));
+        const result = Option.None().and(Option.Some(otherValue));
 
-        assertEquals(Option.isOption(result), true);
-        assertEquals(Option.isNone(result), true);
+        assertInstanceOf(result, None<string>);
       },
     );
 
     await t.step(
       "Option.None & Option.None => Option.None",
       () => {
-        const result = Option.and(Option.None(), Option.None());
+        const result = Option.None().and(Option.None());
 
-        assertEquals(Option.isOption(result), true);
-        assertEquals(Option.isNone(result), true);
+        assertInstanceOf(result, None<string>);
       },
     );
   });
@@ -199,46 +175,44 @@ Deno.test("Option<T>", async (t) => {
     await t.step("Option.Some(value) => func(value) <Option.Some>", () => {
       const value = "Hello";
       const func = (s: string) => Option.Some(s.length);
-      const result = Option.and_then(Option.Some(value), func);
+      const result = Option.Some(value).andThen(func);
       const expected = func(value);
 
-      assertEquals(Option.isOption(result), true);
-      assertEquals(Option.isOption(expected), true);
+      assertInstanceOf(expected, Some<number>);
+      assertInstanceOf(result, Some<number>);
 
-      const resultIsSome = Option.isSome(result);
-      const expectedIsSome = Option.isSome(expected);
-
-      assertEquals(resultIsSome, true);
-      assertEquals(expectedIsSome, true);
-      assertEquals(
-        resultIsSome && result.value,
-        expectedIsSome && expected.value,
-      );
+      assertEquals(result.unwrap(), expected.unwrap());
     });
 
     await t.step("Option.Some(value) => func(value) <Option.None>", () => {
       const value = "Hello";
       const func = (s: string) => Option.None<number>();
-      const result = Option.and_then(Option.Some(value), func);
+      const result = Option.Some(value).andThen(func);
       const expected = func(value);
 
-      assertEquals(Option.isOption(result), true);
-      assertEquals(Option.isOption(expected), true);
-
-      const resultIsNone = Option.isNone(result);
-      const expectedIsNone = Option.isNone(expected);
-
-      assertEquals(resultIsNone, true);
-      assertEquals(expectedIsNone, true);
+      assertInstanceOf(expected, None<number>);
+      assertInstanceOf(result, None<number>);
     });
 
-    await t.step("Option.None => Option.None", () => {
-      const func = (s: string) => Option.None<number>();
-      const result = Option.and_then(Option.None<string>(), func);
+    await t.step(
+      "Option.None, func(value) <Option.Some> => Option.None",
+      () => {
+        const func = (s: string) => Option.Some<number>(s.length);
+        const result = Option.None<string>().andThen(func);
 
-      assertEquals(Option.isOption(result), true);
-      assertEquals(Option.isNone(result), true);
-    });
+        assertInstanceOf(result, None<number>);
+      },
+    );
+
+    await t.step(
+      "Option.None, func(value) <Option.None> => Option.None",
+      () => {
+        const func = (_s: string) => Option.None<number>();
+        const result = Option.None<string>().andThen(func);
+
+        assertInstanceOf(result, None<number>);
+      },
+    );
   });
 
   await t.step("or", async (t) => {
@@ -247,14 +221,10 @@ Deno.test("Option<T>", async (t) => {
       () => {
         const value = "Hello";
         const otherValue = "World";
-        const result = Option.or(Option.Some(value), Option.Some(otherValue));
+        const result = Option.Some(value).or(Option.Some(otherValue));
 
-        assertEquals(Option.isOption(result), true);
-
-        const isSome = Option.isSome(result);
-
-        assertEquals(isSome, true);
-        assertEquals(isSome && result.value, value);
+        assertInstanceOf(result, Some<string>);
+        assertEquals(result.unwrap(), value);
       },
     );
 
@@ -262,14 +232,10 @@ Deno.test("Option<T>", async (t) => {
       "Option.Some(value), Option.None => Option.Some(value)",
       () => {
         const value = "Hello";
-        const result = Option.or(Option.Some(value), Option.None());
+        const result = Option.Some(value).or(Option.None());
 
-        assertEquals(Option.isOption(result), true);
-
-        const isSome = Option.isSome(result);
-
-        assertEquals(isSome, true);
-        assertEquals(isSome && result.value, value);
+        assertInstanceOf(result, Some<string>);
+        assertEquals(result.unwrap(), value);
       },
     );
 
@@ -277,22 +243,17 @@ Deno.test("Option<T>", async (t) => {
       "Option.None, Option.Some(otherValue) => Option.Some(otherValue)",
       () => {
         const otherValue = "World";
-        const result = Option.or(Option.None(), Option.Some(otherValue));
+        const result = Option.None<string>().or(Option.Some(otherValue));
 
-        assertEquals(Option.isOption(result), true);
-
-        const isSome = Option.isSome(result);
-
-        assertEquals(isSome, true);
-        assertEquals(isSome && result.value, otherValue);
+        assertInstanceOf(result, Some<string>);
+        assertEquals(result.unwrap(), otherValue);
       },
     );
 
     await t.step("Option.None, Option.None => Option.None", () => {
-      const result = Option.or(Option.None(), Option.None());
+      const result = Option.None().or(Option.None());
 
-      assertEquals(Option.isOption(result), true);
-      assertEquals(Option.isNone(result), true);
+      assertInstanceOf(result, None);
     });
   });
 
@@ -301,35 +262,26 @@ Deno.test("Option<T>", async (t) => {
       const value = "Hello";
       const otherValue = "World";
       const func = () => Option.Some(otherValue);
-      const result = Option.or_else(Option.Some(value), func);
+      const result = Option.Some(value).orElse(func);
 
-      assertEquals(Option.isOption(result), true);
-
-      const isSome = Option.isSome(result);
-
-      assertEquals(isSome, true);
-      assertEquals(isSome && result.value, value);
+      assertInstanceOf(result, Some<string>);
+      assertEquals(result.unwrap(), value);
     });
 
     await t.step("Option.None => func() <Option.Some>", () => {
       const otherValue = "World";
       const func = () => Option.Some(otherValue);
-      const result = Option.or_else(Option.None<string>(), func);
+      const result = Option.None<string>().orElse(func);
 
-      assertEquals(Option.isOption(result), true);
-
-      const isSome = Option.isSome(result);
-
-      assertEquals(isSome, true);
-      assertEquals(isSome && result.value, otherValue);
+      assertInstanceOf(result, Some<string>);
+      assertEquals(result.unwrap(), otherValue);
     });
 
     await t.step("Option.None => func() <Option.None>", () => {
       const func = () => Option.None<string>();
-      const result = Option.or_else(Option.None<string>(), func);
+      const result = Option.None<string>().orElse(func);
 
-      assertEquals(Option.isOption(result), true);
-      assertEquals(Option.isNone(result), true);
+      assertInstanceOf(result, None);
     });
   });
 
@@ -338,14 +290,10 @@ Deno.test("Option<T>", async (t) => {
       "Option.Some(value), Option.None => Option.Some(value)",
       () => {
         const value = "Hello";
-        const result = Option.xor(Option.Some(value), Option.None());
+        const result = Option.Some(value).xor(Option.None());
 
-        assertEquals(Option.isOption(result), true);
-
-        const isSome = Option.isSome(result);
-
-        assertEquals(isSome, true);
-        assertEquals(isSome && result.value, value);
+        assertInstanceOf(result, Some<string>);
+        assertEquals(result.unwrap(), value);
       },
     );
 
@@ -353,14 +301,10 @@ Deno.test("Option<T>", async (t) => {
       "Option.None, Option.Some(otherValue) => Option.Some(otherValue)",
       () => {
         const otherValue = "World";
-        const result = Option.xor(Option.None(), Option.Some(otherValue));
+        const result = Option.None<string>().xor(Option.Some(otherValue));
 
-        assertEquals(Option.isOption(result), true);
-
-        const isSome = Option.isSome(result);
-
-        assertEquals(isSome, true);
-        assertEquals(isSome && result.value, otherValue);
+        assertInstanceOf(result, Some<string>);
+        assertEquals(result.unwrap(), otherValue);
       },
     );
 
@@ -369,18 +313,16 @@ Deno.test("Option<T>", async (t) => {
       () => {
         const value = "Hello";
         const otherValue = "World";
-        const result = Option.xor(Option.Some(value), Option.Some(otherValue));
+        const result = Option.Some(value).xor(Option.Some(otherValue));
 
-        assertEquals(Option.isOption(result), true);
-        assertEquals(Option.isNone(result), true);
+        assertInstanceOf(result, None<string>);
       },
     );
 
     await t.step("Option.None, Option.None => Option.None", () => {
-      const result = Option.xor(Option.None(), Option.None());
+      const result = Option.None().xor(Option.None());
 
-      assertEquals(Option.isOption(result), true);
-      assertEquals(Option.isNone(result), true);
+      assertInstanceOf(result, None);
     });
   });
 
@@ -390,38 +332,31 @@ Deno.test("Option<T>", async (t) => {
       () => {
         const value = "Hello";
         const otherValue = "World";
-        const result = Option.zip(Option.Some(value), Option.Some(otherValue));
+        const result = Option.Some(value).zip(Option.Some(otherValue));
 
-        assertEquals(Option.isOption(result), true);
-
-        const isSome = Option.isSome(result);
-
-        assertEquals(isSome, true);
-        assertEquals(isSome && result.value, [value, otherValue]);
+        assertInstanceOf(result, Some<[string, string]>);
+        assertEquals(result.unwrap(), [value, otherValue]);
       },
     );
 
     await t.step("Option.Some(value), Option.None => Option.None", () => {
       const value = "Hello";
-      const result = Option.zip(Option.Some(value), Option.None());
+      const result = Option.Some(value).zip(Option.None());
 
-      assertEquals(Option.isOption(result), true);
-      assertEquals(Option.isNone(result), true);
+      assertInstanceOf(result, None<[string, unknown]>);
     });
 
     await t.step("Option.None, Option.Some(otherValue) => Option.None", () => {
       const otherValue = "World";
-      const result = Option.zip(Option.None(), Option.Some(otherValue));
+      const result = Option.None().zip(Option.Some(otherValue));
 
-      assertEquals(Option.isOption(result), true);
-      assertEquals(Option.isNone(result), true);
+      assertInstanceOf(result, None<[unknown, string]>);
     });
 
     await t.step("Option.None, Option.None => Option.None", () => {
-      const result = Option.zip(Option.None(), Option.None());
+      const result = Option.None().zip(Option.None());
 
-      assertEquals(Option.isOption(result), true);
-      assertEquals(Option.isNone(result), true);
+      assertInstanceOf(result, None<[unknown, unknown]>);
     });
   });
 
@@ -431,48 +366,39 @@ Deno.test("Option<T>", async (t) => {
       () => {
         const value = "Hello";
         const otherValue = "World";
-        const result = Option.unzip(Option.Some([value, otherValue]));
+        const result = Option.Some<[string, string]>([value, otherValue])
+          .unzip();
 
         assertEquals(Array.isArray(result), true);
         assertEquals(result.length, 2);
 
         const first = result[0];
 
-        assertEquals(Option.isOption(first), true);
-
-        const firstIsSome = Option.isSome(first);
-
-        assertEquals(firstIsSome, true);
-        assertEquals(firstIsSome && first.value, value);
+        assertInstanceOf(first, Some<string>);
+        assertEquals(first.unwrap(), value);
 
         const second = result[1];
 
-        assertEquals(Option.isOption(second), true);
-
-        const secondIsSome = Option.isSome(second);
-
-        assertEquals(secondIsSome, true);
-        assertEquals(secondIsSome && second.value, otherValue);
+        assertInstanceOf(second, Some<string>);
+        assertEquals(second.unwrap(), otherValue);
       },
     );
 
     await t.step(
       "Option.None => [Option.None, Option.None]",
       () => {
-        const result = Option.unzip(Option.None<[string, string]>());
+        const result = Option.None<[string, string]>().unzip();
 
         assertEquals(Array.isArray(result), true);
         assertEquals(result.length, 2);
 
         const first = result[0];
 
-        assertEquals(Option.isOption(first), true);
-        assertEquals(Option.isNone(first), true);
+        assertInstanceOf(first, None<string>);
 
         const second = result[1];
 
-        assertEquals(Option.isOption(second), true);
-        assertEquals(Option.isNone(second), true);
+        assertInstanceOf(second, None<string>);
       },
     );
   });
@@ -481,35 +407,31 @@ Deno.test("Option<T>", async (t) => {
     await t.step("intoIter", async (t) => {
       await t.step("Option.Some(value) => Iterator over [value]", () => {
         const option = Option.Some(5);
-        const iter = option[IntoIteratorSymbol].intoIter();
+        const iter = option[IntoIteratorSymbol]().intoIter();
 
         assertExists(iter[IteratorSymbol]);
 
-        const firstItem = iter[IteratorSymbol].next();
+        const iterTraitMethods = iter[IteratorSymbol]();
 
-        assertEquals(Option.isOption(firstItem), true);
+        const firstItem = iterTraitMethods.next();
 
-        const firstItemIsSome = Option.isSome(firstItem);
+        assertInstanceOf(firstItem, Some<number>);
+        assertEquals(firstItem.unwrap(), 5);
 
-        assertEquals(firstItemIsSome, true);
-        assertEquals(firstItemIsSome && firstItem.value, 5);
+        const secondItem = iterTraitMethods.next();
 
-        const secondItem = iter[IteratorSymbol].next();
-
-        assertEquals(Option.isOption(secondItem), true);
-        assertEquals(Option.isNone(secondItem), true);
+        assertInstanceOf(secondItem, None<number>);
       });
 
       await t.step("Option.None => Iterator over []", () => {
         const option = Option.None<number>();
-        const iter = option[IntoIteratorSymbol].intoIter();
+        const iter = option[IntoIteratorSymbol]().intoIter();
 
         assertExists(iter[IteratorSymbol]);
 
-        const item = iter[IteratorSymbol].next();
+        const item = iter[IteratorSymbol]().next();
 
-        assertEquals(Option.isOption(item), true);
-        assertEquals(Option.isNone(item), true);
+        assertInstanceOf(item, None<number>);
       });
     });
   });

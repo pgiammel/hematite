@@ -50,8 +50,8 @@ It's quite simple, really...
 ### Option\<T>
 
 ```typescript
-function nullableToOption<T>(value: T | null): Option<NonNullable<T>> {
-  if (value === null) {
+function nullableToOption<T>(value: T | null | undefined): Option<NonNullable<T>> {
+  if (value === null || value === undefined) {
     return Option.None();
   }
 
@@ -61,13 +61,13 @@ function nullableToOption<T>(value: T | null): Option<NonNullable<T>> {
 // Option<number>
 const maybeNumber = nullableToOption(5);
 
-if (Option.isSome(maybeNumber)) {
-  console.log(maybeNumber.value * 2);
+if (maybeNumber.isSome()) {
+  console.log(maybeNumber.unwrap() * 2);
 }
 ```
 
 ```typescript
-console.log(Option.map(Option.Some(5), (n) => n * 2));
+console.log(Option.Some(5).map((n) => n * 2));
 ```
 
 ## Who can contribute?

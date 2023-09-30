@@ -66,3 +66,18 @@ type _Reverse<Tuple extends any[], Reversed extends any[] = []> =
  * Reverse<[1, 2, 3]>
  */
 export type Reverse<Tuple extends any[]> = _Reverse<Tuple>;
+
+/**
+ * Assert that T is a 2-Tuple and infer its type
+ *
+ * @example
+ * // ["Hello", 5]
+ * TwoTuple<["Hello", 5]>
+ *
+ * @example
+ * // never
+ * TwoTuple<"World">
+ */
+export type TwoTuple<T> = T extends [infer First, infer Second]
+  ? [First, Second]
+  : never;
