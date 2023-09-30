@@ -1,46 +1,42 @@
 import { Option } from "./option.ts";
 import {
   type Iterator,
-  type IteratorItem,
+  IteratorMethods,
   IteratorSymbol,
 } from "../traits/iterator.ts";
 
-export const MapSymbol = Symbol("Map");
+export class Map<T, U> implements Iterator<U> {
+  static #IteratorTraitMethods = class<T, U> implements IteratorMethods<U> {
+    #map: Map<T, U>;
+    #mapBaseIteratorMethods: IteratorMethods<T>;
 
-export type Map<
-  Iter extends Iterator<any>,
-  Func extends (arg: IteratorItem<Iter>) => any,
-> =
-  & {
-    type: symbol;
-    iterator: Iter;
-    func: Func;
+    constructor(map: Map<T, U>) {
+      this.#map = map;
+      this.#mapBaseIteratorMethods = this.#map.#baseIterator[IteratorSymbol]();
+    }
+
+    next(): Option<U> {
+      return this.#mapBaseIteratorMethods.next().map(this.#map.#func);
+    }
+
+    map<V>(fn: (arg: U) => V): Map<U, V> {
+      return Map.create(this.#map, fn);
+    }
+  };
+
+  #baseIterator: Iterator<T>;
+  #func: (arg: T) => U;
+
+  constructor(baseIterator: Iterator<T>, func: (arg: T) => U) {
+    this.#baseIterator = baseIterator;
+    this.#func = func;
   }
-  & Iterator<ReturnType<Func>>;
 
-export namespace Map {
-  export function create<
-    Iter extends Iterator<any>,
-    Func extends (arg: IteratorItem<Iter>) => any,
-  >(iterator: Iter, func: Func): Map<Iter, Func> {
-    const self = {
-      type: MapSymbol,
-      iterator,
-      func,
-      [IteratorSymbol]: {
-        next(): Option<ReturnType<Func>> {
-          const input = iterator[IteratorSymbol].next();
+  static create<T, U>(iterator: Iterator<T>, fn: (arg: T) => U): Map<T, U> {
+    return new Map(iterator, fn);
+  }
 
-          return Option.map(input, func);
-        },
-        map<NewFunc extends (arg: ReturnType<Func>) => any>(
-          fn: NewFunc,
-        ): Map<Iterator<ReturnType<Func>>, NewFunc> {
-          return Map.create(self, fn);
-        },
-      },
-    };
-
-    return self;
+  [IteratorSymbol](): IteratorMethods<U> {
+    return new Map.#IteratorTraitMethods(this);
   }
 }

@@ -2,21 +2,16 @@ import { Option } from "../types/option.ts";
 import { Map } from "../types/map.ts";
 import { hasProperty, isObject } from "../types/utils.ts";
 
-export type IteratorItem<I extends Iterator<unknown>> = I extends
-  Iterator<infer T> ? T : never;
-
 export const IteratorSymbol = Symbol("Iterator");
 
-export interface Iterator<T> {
-  [IteratorSymbol]: {
-    next(): Option<T>;
-    map<F extends (arg: T) => any>(fn: F): Map<Iterator<T>, F>;
-  };
+export interface IteratorMethods<T> {
+  next(): Option<T>;
+  map<U>(fn: (arg: T) => U): Map<T, U>;
 }
 
-type IsSameItem<T, I extends Iterator<T>> = T extends IteratorItem<I> ? true
-  : IteratorItem<I> extends T ? true
-  : never;
+export interface Iterator<T> {
+  [IteratorSymbol](): IteratorMethods<T>;
+}
 
 export namespace Iterator {
   export function isIterator(
@@ -28,17 +23,15 @@ export namespace Iterator {
     );
   }
 
-  export function next<I extends Iterator<any>>(
-    iterator: I,
-  ): Option<IteratorItem<I>> {
-    return iterator[IteratorSymbol].next();
+  export function next<T>(iterator: Iterator<T>): Option<T> {
+    return iterator[IteratorSymbol]().next();
   }
 
-  export function map<
-    I extends Iterator<any>,
-    F extends (args: IteratorItem<I>) => any,
-  >(iterator: I, fn: F): Map<Iterator<IteratorItem<I>>, F> {
-    return iterator[IteratorSymbol].map(fn);
+  export function map<T, U>(
+    iterator: Iterator<T>,
+    fn: (arg: T) => U,
+  ): Map<T, U> {
+    return iterator[IteratorSymbol]().map(fn);
   }
 
   /**
@@ -48,9 +41,10 @@ export namespace Iterator {
     iterator: Iterator<T>,
   ): globalThis.IterableIterator<T> {
     let item: Option<T>;
+    const traitMethods = iterator[IteratorSymbol]();
 
-    while (Option.isSome(item = iterator[IteratorSymbol].next())) {
-      yield item.value;
+    while ((item = traitMethods.next()).isSome()) {
+      yield item.unwrap();
     }
   }
 }
