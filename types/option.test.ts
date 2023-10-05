@@ -165,6 +165,25 @@ Deno.test("Option<T>", async (t) => {
       });
   });
 
+    await t.step("okOrElse", async (t) => {
+        await t.step("Some(value), fn => Ok(value)", () => {
+            const value = "Hello";
+            const fn = () => -1;
+            const result = Option.Some(value).okOrElse(fn);
+
+            assertInstanceOf(result, Ok<string, number>);
+            assertEquals(result.unwrap(), value);
+        });
+
+        await t.step("None, fn => Err(fn())", () => {
+            const fn = () => -1;
+            const result = Option.None<string>().okOrElse(fn);
+
+            assertInstanceOf(result, Err<string, number>);
+            assertEquals(result.unwrapErr(), fn());
+        });
+    });
+
   await t.step("and", async (t) => {
     await t.step(
       "Option.Some(value) & Option.Some(otherValue) => Option.Some(otherValue)",

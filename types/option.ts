@@ -110,6 +110,8 @@ export abstract class Option<T> implements IntoIterator<T> {
    */
   abstract okOr<E>(err: E): Result<T, E>;
 
+  abstract okOrElse<E>(fn: () => E): Result<T, E>;
+
   /**
    * @returns `None` if `this` is `None`, otherwise returns `other`.
    */
@@ -211,6 +213,10 @@ export class Some<T> extends Option<T> {
     return Result.Ok<T, E>(this.#value);
   }
 
+  okOrElse<E>(_fn: () => E): Result<T, E> {
+    return Result.Ok<T, E>(this.#value);
+  }
+
   and<U>(other: Option<U>): Option<U> {
     return other;
   }
@@ -309,6 +315,10 @@ export class None<T> extends Option<T> {
 
   okOr<E>(err: E): Result<T, E> {
     return Result.Err(err);
+  }
+
+  okOrElse<E>(fn: () => E): Result<T, E> {
+    return Result.Err<T, E>(fn());
   }
 
   and<U>(_other: Option<U>): Option<U> {
