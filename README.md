@@ -50,7 +50,9 @@ It's quite simple, really...
 ### Option\<T>
 
 ```typescript
-function nullableToOption<T>(value: T | null | undefined): Option<NonNullable<T>> {
+function nullableToOption<T>(
+  value: T | null | undefined,
+): Option<NonNullable<T>> {
   if (value === null || value === undefined) {
     return Option.None();
   }
