@@ -67,6 +67,23 @@ Deno.test("Option<T>", async (t) => {
     });
   });
 
+  await t.step("unwrapOrElse", async (t) => {
+      await t.step("Some(value), fn => value", () => {
+          const value = "Hello";
+          const func = () => "World";
+          const result = Option.Some(value).unwrapOrElse(func);
+
+          assertEquals(result, value);
+      });
+
+      await t.step("Option.None, fn => fn()", () => {
+          const func = () => "World";
+          const result = Option.None().unwrapOrElse(func);
+
+          assertEquals(result, func());
+      });
+  });
+
   await t.step("map", async (t) => {
     await t.step("Option.Some(value) => Option.Some(func(value))", () => {
       const value = "Hello";

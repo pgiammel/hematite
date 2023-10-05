@@ -66,6 +66,11 @@ export abstract class Option<T> implements IntoIterator<T> {
   abstract unwrapOr(defaultValue: T): T;
 
   /**
+   * @returns The contained `Some` value or computes it from a `fn`.
+   */
+  abstract unwrapOrElse(fn: () => T): T;
+
+  /**
    * Map `this` to an `Option` on another type by applying a
    * function to the inner value if it's a `Some` variant.
    * @param option `Option` to map from
@@ -159,6 +164,10 @@ export class Some<T> extends Option<T> {
     return this.#value;
   }
 
+  unwrapOrElse(_fn: () => T): T {
+    return this.#value;
+  }
+
   map<U>(fn: (value: T) => U): Option<U> {
     return Option.Some(fn(this.#value));
   }
@@ -237,6 +246,10 @@ export class None<T> extends Option<T> {
 
   unwrapOr(defaultValue: T): T {
     return defaultValue;
+  }
+
+  unwrapOrElse(fn: () => T): T {
+    return fn();
   }
 
   map<U>(_fn: (value: T) => U): Option<U> {
