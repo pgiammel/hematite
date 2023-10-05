@@ -265,6 +265,28 @@ Deno.test("Option<T>", async (t) => {
       });
   });
 
+    await t.step("flatten", async (t) => {
+        await t.step("Some(Some(value)) => Some(value)", () => {
+            const value = "Hello";
+            const result = Option.Some(Option.Some(value)).flatten();
+
+            assertInstanceOf(result, Some<string>);
+            assertEquals(result.unwrap(), value);
+        });
+
+        await t.step("Some(None) => None", () => {
+            const result = Option.Some(Option.None()).flatten();
+
+            assertInstanceOf(result, None);
+        });
+
+        await t.step("None => None", () => {
+            const result = Option.None<Option<unknown>>().flatten();
+
+            assertInstanceOf(result, None);
+        });
+    });
+
   await t.step("or", async (t) => {
     await t.step(
       "Option.Some(value), Option.Some(otherValue) => Option.Some(value)",

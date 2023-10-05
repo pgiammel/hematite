@@ -7,6 +7,8 @@ import {
 import { TwoTuple } from "../utils/tuple.ts";
 import { UnwrapError } from "./error.ts";
 
+export type OptionItem<T> = T extends Option<infer U> ? U : never;
+
 /**
  * Type `Option` represents an optional value: ever `Option` is either `Some`
  * and contains a value, or `None`, and does not. `Option` types have a number
@@ -126,6 +128,11 @@ export abstract class Option<T> implements IntoIterator<T> {
   abstract filter(fn: (arg: T) => boolean): Option<T>;
 
   /**
+   * Converts from `Option<Option<T>>` to `Option<T>`.
+   */
+  abstract flatten(this: Option<Option<OptionItem<T>>>): Option<OptionItem<T>>;
+
+  /**
    * @return `this` if it is not `None`, otherwise return `other`
    */
   abstract or(other: Option<T>): Option<T>;
@@ -207,6 +214,10 @@ export class Some<T> extends Option<T> {
     }
 
     return Option.None();
+  }
+
+  flatten(this: Some<Option<OptionItem<T>>>): Option<OptionItem<T>> {
+    return this.#value;
   }
 
   or(_other: Option<T>): Option<T> {
@@ -295,6 +306,10 @@ export class None<T> extends Option<T> {
 
   filter(_fn: (arg: T) => boolean): Option<T> {
     return this;
+  }
+
+  flatten(this: None<Option<OptionItem<T>>>): Option<OptionItem<T>> {
+    return Option.None();
   }
 
   or(other: Option<T>): Option<T> {
