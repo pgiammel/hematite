@@ -113,6 +113,19 @@ export abstract class Option<T> implements IntoIterator<T> {
   abstract andThen<U>(fn: (arg: T) => Option<U>): Option<U>;
 
   /**
+   * @returns `None` if `this` is `None`, otherwise calls `fn` with the wrapped
+   * value and returns
+   *
+   * `Some(t)` if `fn` returns true (where `t` is the wrapped value), and `None`
+   * if `fn` returns false.
+   *
+   * This function works similar to `Iterator::filter()`. You can imagine the
+   * `Option<T>` being an iterator over one or zero elements. `filter()` lets
+   * you decide which elements to keep.
+   */
+  abstract filter(fn: (arg: T) => boolean): Option<T>;
+
+  /**
    * @return `this` if it is not `None`, otherwise return `other`
    */
   abstract or(other: Option<T>): Option<T>;
@@ -186,6 +199,14 @@ export class Some<T> extends Option<T> {
 
   andThen<U>(fn: (arg: T) => Option<U>): Option<U> {
     return fn(this.#value);
+  }
+
+  filter(fn: (arg: T) => boolean): Option<T> {
+    if (fn(this.#value)) {
+      return this;
+    }
+
+    return Option.None();
   }
 
   or(_other: Option<T>): Option<T> {
@@ -270,6 +291,10 @@ export class None<T> extends Option<T> {
 
   andThen<U>(_fn: (arg: T) => Option<U>): Option<U> {
     return Option.None();
+  }
+
+  filter(_fn: (arg: T) => boolean): Option<T> {
+    return this;
   }
 
   or(other: Option<T>): Option<T> {
