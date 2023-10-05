@@ -6,6 +6,7 @@ import {
 } from "../traits/into_iterator.ts";
 import { TwoTuple } from "../utils/tuple.ts";
 import { UnwrapError } from "./error.ts";
+import { Result } from "./result.ts";
 
 export type OptionItem<T> = T extends Option<infer U> ? U : never;
 
@@ -104,6 +105,12 @@ export abstract class Option<T> implements IntoIterator<T> {
   abstract mapOrElse<U>(defaultFn: () => U, mapFn: (arg: T) => U): U;
 
   /**
+   * Transforms the `Option<T>` into a `Result<T, E>`, mapping `Some(v)` to
+   * `Ok(v)` and `None` to `Err(err)`.
+   */
+  abstract okOr<E>(err: E): Result<T, E>;
+
+  /**
    * @returns `None` if `this` is `None`, otherwise returns `other`.
    */
   abstract and<U>(other: Option<U>): Option<U>;
@@ -200,6 +207,10 @@ export class Some<T> extends Option<T> {
     return mapFn(this.#value);
   }
 
+  okOr<E>(_err: E): Result<T, E> {
+    return Result.Ok<T, E>(this.#value);
+  }
+
   and<U>(other: Option<U>): Option<U> {
     return other;
   }
@@ -294,6 +305,10 @@ export class None<T> extends Option<T> {
 
   mapOrElse<U>(defaultFn: () => U, _mapFn: (arg: T) => U): U {
     return defaultFn();
+  }
+
+  okOr<E>(err: E): Result<T, E> {
+    return Result.Err(err);
   }
 
   and<U>(_other: Option<U>): Option<U> {

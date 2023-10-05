@@ -8,6 +8,7 @@ import { None, Option, Some } from "./option.ts";
 import { IntoIteratorSymbol } from "../traits/into_iterator.ts";
 import { IteratorSymbol } from "../traits/iterator.ts";
 import { UnwrapError } from "./error.ts";
+import {Err, Ok} from "./result.ts";
 
 Deno.test("Option<T>", async (t) => {
   await t.step("Some", () => assertInstanceOf(Option.Some("Hello"), Some));
@@ -143,6 +144,25 @@ Deno.test("Option<T>", async (t) => {
 
       assertEquals(result, defaultFunc());
     });
+  });
+
+  await t.step("okOr", async (t) => {
+      await t.step("Some(value), err => Ok(value)", () => {
+          const value = "Hello";
+          const err = -1;
+          const result = Option.Some(value).okOr(err);
+
+          assertInstanceOf(result, Ok<string, number>);
+          assertEquals(result.unwrap(), value);
+      });
+
+      await t.step("None, err => Err(err)", () => {
+          const err = -1;
+          const result = Option.None<string>().okOr(err);
+
+          assertInstanceOf(result, Err<string, number>);
+          assertEquals(result.unwrapErr(), err);
+      });
   });
 
   await t.step("and", async (t) => {
