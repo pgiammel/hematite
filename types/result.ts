@@ -86,6 +86,11 @@ export abstract class Result<T, E> implements IntoIterator<T> {
   abstract unwrapOr(defaultData: T): T;
 
   /**
+   * @returns The contained `Ok` value or computes it from a closure
+   */
+  abstract unwrapOrElse(defaultFn: (arg: E) => T): T;
+
+  /**
    * Map `this` to a Result on another successful type by applying a function
    * to the inner data if it's an `Ok` variant.
    * @param result `Result` to map from
@@ -201,6 +206,10 @@ export class Ok<T, E> extends Result<T, E> {
     return this.#data;
   }
 
+  unwrapOrElse(_defaultFn: (arg: E) => T): T {
+    return this.#data;
+  }
+
   map<U>(fn: (arg: T) => U): Result<U, E> {
     return Result.Ok(fn(this.#data));
   }
@@ -286,6 +295,10 @@ export class Err<T, E> extends Result<T, E> {
 
   unwrapOr(defaultData: T): T {
     return defaultData;
+  }
+
+  unwrapOrElse(defaultFn: (arg: E) => T): T {
+    return defaultFn(this.#error);
   }
 
   map<U>(_fn: (arg: T) => U): Result<U, E> {
