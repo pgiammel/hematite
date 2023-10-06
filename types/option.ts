@@ -152,6 +152,12 @@ export abstract class Option<T> implements IntoIterator<T> {
    */
   abstract orElse(fn: () => Option<T>): Option<T>;
 
+  /**
+   * Transposes an `Option` of a `Result` into a `Result` of an `Option`.
+   *
+   * `None` will be mapped to `Ok(None)`. `Some(Ok(_))` and `Some(Err(_))` will
+   * be mapped to `Ok(Some(_))` and `Err(_)`.
+   */
   abstract transpose<U, E>(this: Option<Result<U, E>>): Result<Option<U>, E>;
 
   /**
