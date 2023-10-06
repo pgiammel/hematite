@@ -134,6 +134,13 @@ export abstract class Result<T, E> implements IntoIterator<T> {
    */
   abstract or(rhs: Result<T, E>): Result<T, E>;
 
+  /**
+   * Calls `fn` if the result is `Err`, otherwise returns the `Ok` value of self
+   *
+   * This function can be used for control flow based on result values.
+   */
+  abstract orElse<F>(fn: (arg: E) => Result<T, F>): Result<T, F>;
+
   abstract [IntoIteratorSymbol](): IntoIteratorMethods<T>;
 }
 
@@ -199,6 +206,10 @@ export class Ok<T, E> extends Result<T, E> {
 
   or(_rhs: Result<T, E>): Result<T, E> {
     return this;
+  }
+
+  orElse<F>(_fn: (arg: E) => Result<T, F>): Result<T, F> {
+    return Result.Ok(this.#data);
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
@@ -274,6 +285,10 @@ export class Err<T, E> extends Result<T, E> {
 
   or(rhs: Result<T, E>): Result<T, E> {
     return rhs;
+  }
+
+  orElse<F>(fn: (arg: E) => Result<T, F>): Result<T, F> {
+    return fn(this.#error);
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
