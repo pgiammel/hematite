@@ -5,7 +5,7 @@ import {
   assertThrows,
 } from "../deps.ts";
 import { Err, Ok, Result } from "./result.ts";
-import {None, Option, Some} from "./option.ts";
+import { None, Option, Some } from "./option.ts";
 import { IntoIteratorSymbol } from "../traits/into_iterator.ts";
 import { IteratorSymbol } from "../traits/iterator.ts";
 import { UnwrapError } from "./error.ts";
@@ -34,8 +34,9 @@ Deno.test("Result<T, E>", async (t) => {
     await t.step("Ok(data), Err(otherError) => Err(otherError)", () => {
       const data = "Hello";
       const otherError = false;
-      const result =
-          Result.Ok<string, boolean>(data).and(Result.Err(otherError));
+      const result = Result.Ok<string, boolean>(data).and(
+        Result.Err(otherError),
+      );
 
       assertInstanceOf(result, Err<number, boolean>);
       assertEquals(result.unwrapErr(), otherError);
@@ -75,8 +76,7 @@ Deno.test("Result<T, E>", async (t) => {
     await t.step("Ok(data), fn <Err(otherError)> => Err(otherError)", () => {
       const data = "Hello";
       const func = (_: string) => Result.Err(-1);
-      const result =
-          Result.Ok<string, number>(data).andThen(func);
+      const result = Result.Ok<string, number>(data).andThen(func);
       const expected = func(data);
 
       assertInstanceOf(expected, Err<unknown, number>);
@@ -138,8 +138,8 @@ Deno.test("Result<T, E>", async (t) => {
 
     await t.step("Err(error) => Err(error)", () => {
       const error = -1;
-      const result =
-          Result.Err<Result<unknown, number>, number>(error).flatten();
+      const result = Result.Err<Result<unknown, number>, number>(error)
+        .flatten();
 
       assertInstanceOf(result, Err<unknown, number>);
       assertEquals(result.unwrapErr(), error);
@@ -279,7 +279,7 @@ Deno.test("Result<T, E>", async (t) => {
   await t.step("unwrapOrElse", async (t) => {
     await t.step("Ok(data), defaultFn => data", () => {
       const data = "Hello";
-      const func = (_: unknown) => "World"
+      const func = (_: unknown) => "World";
       const result = Result.Ok(data).unwrapOrElse(func);
 
       assertEquals(result, data);
@@ -366,8 +366,10 @@ Deno.test("Result<T, E>", async (t) => {
       const error = true;
       const defaultFn = (err: boolean) => Number(err);
       const mapFn = (s: string) => s.length;
-      const result =
-          Result.Err<string, boolean>(error).mapOrElse(defaultFn, mapFn);
+      const result = Result.Err<string, boolean>(error).mapOrElse(
+        defaultFn,
+        mapFn,
+      );
 
       assertEquals(result, defaultFn(error));
     });
@@ -386,7 +388,7 @@ Deno.test("Result<T, E>", async (t) => {
       const result = Result.Err(-1).ok();
 
       assertInstanceOf(result, None<unknown>);
-    })
+    });
   });
 
   await t.step("or", async (t) => {
@@ -482,7 +484,7 @@ Deno.test("Result<T, E>", async (t) => {
       const result = Result.Ok(Option.None()).transpose();
 
       assertInstanceOf(result, None<unknown>);
-    })
+    });
 
     await t.step("Err(error) => Some(Err(error))", () => {
       const error = -1;

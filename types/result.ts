@@ -6,7 +6,7 @@ import {
 } from "../traits/into_iterator.ts";
 import type { Iterator } from "../traits/iterator.ts";
 import { UnwrapError } from "./error.ts";
-import {Option} from "./option.ts";
+import { Option } from "./option.ts";
 
 /**
  * `Result<T, E>` is the type used for returning and propagating errors. It is
@@ -239,7 +239,7 @@ export class Ok<T, E> extends Result<T, E> {
   }
 
   transpose<U>(this: Ok<Option<U>, E>): Option<Result<U, E>> {
-    return this.#data.map(v => Result.Ok(v));
+    return this.#data.map((v) => Result.Ok(v));
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
