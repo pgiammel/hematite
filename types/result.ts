@@ -23,6 +23,12 @@ export abstract class Result<T, E> implements IntoIterator<T> {
     return new Err<T, E>(error);
   }
 
+  /**
+   * @returns `rhs` if the result is `Ok`, otherwise returns the `Err` value of
+   * self.
+   */
+  abstract and<U>(rhs: Result<U, E>): Result<U, E>;
+
   isOk(): this is Ok<T, E> {
     return this instanceof Ok;
   }
@@ -73,6 +79,10 @@ export class Ok<T, E> extends Result<T, E> {
     this.#data = data;
   }
 
+  and<U>(rhs: Result<U, E>): Result<U, E> {
+    return rhs;
+  }
+
   unwrap(): T {
     return this.#data;
   }
@@ -102,6 +112,10 @@ export class Err<T, E> extends Result<T, E> {
   constructor(error: E) {
     super();
     this.#error = error;
+  }
+
+  and<U>(_rhs: Result<U, E>): Result<U, E> {
+    return Result.Err(this.#error);
   }
 
   unwrap(): T {
