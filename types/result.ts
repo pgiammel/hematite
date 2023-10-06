@@ -6,6 +6,7 @@ import {
 } from "../traits/into_iterator.ts";
 import type { Iterator } from "../traits/iterator.ts";
 import { UnwrapError } from "./error.ts";
+import {Option} from "./option.ts";
 
 /**
  * `Result<T, E>` is the type used for returning and propagating errors. It is
@@ -36,6 +37,11 @@ export abstract class Result<T, E> implements IntoIterator<T> {
    * This function can be used for control flow based on `Result` values.
    */
   abstract andThen<U>(fn: (arg: T) => Result<U, E>): Result<U, E>;
+
+  /**
+   * Converts from `Result<T, E>` to `Option<E>`.
+   */
+  abstract err(): Option<E>;
 
   isOk(): this is Ok<T, E> {
     return this instanceof Ok;
@@ -95,6 +101,10 @@ export class Ok<T, E> extends Result<T, E> {
     return fn(this.#data);
   }
 
+  err(): Option<E> {
+    return Option.None();
+  }
+
   unwrap(): T {
     return this.#data;
   }
@@ -132,6 +142,10 @@ export class Err<T, E> extends Result<T, E> {
 
   andThen<U>(_fn: (arg: T) => Result<U, E>): Result<U, E> {
     return Result.Err(this.#error);
+  }
+
+  err(): Option<E> {
+    return Option.Some(this.#error);
   }
 
   unwrap(): T {
