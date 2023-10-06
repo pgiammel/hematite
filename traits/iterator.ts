@@ -6,7 +6,7 @@ export const IteratorSymbol = Symbol("Iterator");
 
 export interface IteratorMethods<T> {
   next(): Option<T>;
-  map<U>(fn: (arg: T) => U): Map<T, U>;
+  map<ReturnT>(fn: <InputT extends T>(arg: InputT) => ReturnT): Map<T, ReturnT>;
 }
 
 export interface Iterator<T> {
@@ -27,10 +27,10 @@ export namespace Iterator {
     return iterator[IteratorSymbol]().next();
   }
 
-  export function map<T, U>(
+  export function map<T, ReturnT>(
     iterator: Iterator<T>,
-    fn: (arg: T) => U,
-  ): Map<T, U> {
+    fn: <InputT extends T>(arg: InputT) => ReturnT,
+  ): Map<T, ReturnT> {
     return iterator[IteratorSymbol]().map(fn);
   }
 

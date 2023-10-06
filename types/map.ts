@@ -19,21 +19,29 @@ export class Map<T, U> implements Iterator<U> {
       return this.#mapBaseIteratorMethods.next().map(this.#map.#func);
     }
 
-    map<V>(fn: (arg: U) => V): Map<U, V> {
+    map<ReturnT>(
+        fn: <InputT extends U>(arg: InputT) => ReturnT
+    ): Map<U, ReturnT> {
       return Map.create(this.#map, fn);
     }
   };
 
   #baseIterator: Iterator<T>;
-  #func: (arg: T) => U;
+  #func: <InputT extends T>(arg: InputT) => U;
 
-  constructor(baseIterator: Iterator<T>, func: (arg: T) => U) {
+  constructor(
+      baseIterator: Iterator<T>,
+      func: <InputT extends T>(arg: InputT) => U
+  ) {
     this.#baseIterator = baseIterator;
     this.#func = func;
   }
 
-  static create<T, U>(iterator: Iterator<T>, fn: (arg: T) => U): Map<T, U> {
-    return new Map(iterator, fn);
+  static create<T, ReturnT>(
+      iterator: Iterator<T>,
+      fn: <InputT extends T>(arg: InputT) => ReturnT
+  ): Map<T, ReturnT> {
+    return new Map<T, ReturnT>(iterator, fn);
   }
 
   [IteratorSymbol](): IteratorMethods<U> {

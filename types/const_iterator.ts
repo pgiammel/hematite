@@ -25,7 +25,10 @@ export class ConstIterator<T> implements Iterator<T> {
 
       return Option.None();
     }
-    map<U>(fn: (arg: T) => U): Map<T, U> {
+
+    map<ReturnT>(
+        fn: <InputT extends T>(arg: InputT) => ReturnT
+    ): Map<T, ReturnT> {
       return Map.create(this.#constIterator, fn);
     }
   };
