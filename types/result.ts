@@ -141,6 +141,14 @@ export abstract class Result<T, E> implements IntoIterator<T> {
    */
   abstract orElse<F>(fn: (arg: E) => Result<T, F>): Result<T, F>;
 
+  /**
+   * Transposes a `Result` of an `Option` into an `Option` of a `Result`.
+   *
+   * `Ok(None)` will be mapped to `None`. `Ok(Some(_))` and `Err(_)` will be
+   * mapped to `Some(Ok(_))` and `Some(Err(_))`.
+   */
+  abstract transpose<U>(this: Result<Option<U>, E>): Option<Result<U, E>>;
+
   abstract [IntoIteratorSymbol](): IntoIteratorMethods<T>;
 }
 
@@ -210,6 +218,10 @@ export class Ok<T, E> extends Result<T, E> {
 
   orElse<F>(_fn: (arg: E) => Result<T, F>): Result<T, F> {
     return Result.Ok(this.#data);
+  }
+
+  transpose<U>(this: Ok<Option<U>, E>): Option<Result<U, E>> {
+    return this.#data.map(v => Result.Ok(v));
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
@@ -289,6 +301,10 @@ export class Err<T, E> extends Result<T, E> {
 
   orElse<F>(fn: (arg: E) => Result<T, F>): Result<T, F> {
     return fn(this.#error);
+  }
+
+  transpose<U>(this: Err<Option<U>, E>): Option<Result<U, E>> {
+    return Option.Some(Result.Err(this.#error));
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {

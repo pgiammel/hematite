@@ -5,7 +5,7 @@ import {
   assertThrows,
 } from "../deps.ts";
 import { Err, Ok, Result } from "./result.ts";
-import { None, Some } from "./option.ts";
+import {None, Option, Some} from "./option.ts";
 import { IntoIteratorSymbol } from "../traits/into_iterator.ts";
 import { IteratorSymbol } from "../traits/iterator.ts";
 import { UnwrapError } from "./error.ts";
@@ -428,6 +428,38 @@ Deno.test("Result<T, E>", async (t) => {
       assertInstanceOf(expected, Err<unknown, number>);
       assertInstanceOf(result, Err<unknown, number>);
       assertEquals(result.unwrapErr(), expected.unwrapErr());
+    });
+  });
+
+  await t.step("transpose", async (t) => {
+    await t.step("Ok(Some(value)) => Some(Ok(value))", () => {
+      const value = "Hello";
+      const result = Result.Ok(Option.Some(value)).transpose();
+
+      assertInstanceOf(result, Some<Result<string, unknown>>);
+
+      const inner = result.unwrap();
+
+      assertInstanceOf(inner, Ok<string, unknown>);
+      assertEquals(inner.unwrap(), value);
+    });
+
+    await t.step("Ok(None) => None", () => {
+      const result = Result.Ok(Option.None()).transpose();
+
+      assertInstanceOf(result, None<unknown>);
+    })
+
+    await t.step("Err(error) => Some(Err(error))", () => {
+      const error = -1;
+      const result = Result.Err<Option<unknown>, number>(-1).transpose();
+
+      assertInstanceOf(result, Some<Result<unknown, number>>);
+
+      const inner = result.unwrap();
+
+      assertInstanceOf(inner, Err<unknown, number>);
+      assertEquals(inner.unwrapErr(), error);
     });
   });
 
