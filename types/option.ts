@@ -152,6 +152,10 @@ export abstract class Option<T> implements IntoIterator<T> {
    */
   abstract orElse(fn: () => Option<T>): Option<T>;
 
+  abstract transpose<U, E>(
+      this: Option<Result<U, E>>,
+  ): Result<Option<U>, E>;
+
   /**
    * @returns `this` if only `this` is `Some`, `other` if only `other` is `Some`,
    * otherwise returns `None`
@@ -243,6 +247,12 @@ export class Some<T> extends Option<T> {
 
   orElse(_fn: () => Option<T>): Option<T> {
     return this;
+  }
+
+  transpose<U, E>(
+      this: Some<Result<U, E>>
+  ): Result<Option<U>, E> {
+    return this.#value.map(v => Option.Some(v));
   }
 
   xor(other: Option<T>): Option<T> {
@@ -351,6 +361,12 @@ export class None<T> extends Option<T> {
     }
 
     return Option.None();
+  }
+
+  transpose<U, E>(
+      this: None<Result<U, E>>
+  ): Result<Option<U>, E> {
+    return Result.Ok(Option.None());
   }
 
   zip<U>(_rhs: Option<U>): Option<[T, U]> {
