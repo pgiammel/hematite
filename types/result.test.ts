@@ -318,6 +318,27 @@ Deno.test("Result<T, E>", async (t) => {
     });
   });
 
+  await t.step("mapOrElse", async (t) => {
+    await t.step("Ok(data), defaultFn, mapFn => mapFn(data)", () => {
+      const data = "Hello";
+      const defaultFn = (_: unknown) => -1;
+      const mapFn = (s: string) => s.length;
+      const result = Result.Ok(data).mapOrElse(defaultFn, mapFn);
+
+      assertEquals(result, mapFn(data));
+    });
+
+    await t.step("Err(error), defaultFn, mapFn => defaultFn(error)", () => {
+      const error = true;
+      const defaultFn = (err: boolean) => Number(err);
+      const mapFn = (s: string) => s.length;
+      const result =
+          Result.Err<string, boolean>(error).mapOrElse(defaultFn, mapFn);
+
+      assertEquals(result, defaultFn(error));
+    });
+  });
+
   await t.step("IntoIterator trait", async (t) => {
     await t.step("intoIter", async (t) => {
       await t.step("Result.Ok(data) => Iterator over [data]", () => {

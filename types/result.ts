@@ -114,6 +114,15 @@ export abstract class Result<T, E> implements IntoIterator<T> {
    */
   abstract mapOr<U>(defaultValue: U, fn: (arg: T) => U): U;
 
+  /**
+   * Maps a `Result<T, E>` to U by applying fallback function `defaultFn` to a
+   * contained `Err` value, or function `mapFn` to a contained `Ok` value.
+   *
+   * This function can be used to unpack a successful result while handling an
+   * error.
+   */
+  abstract mapOrElse<U>(defaultFn: (arg: E) => U, mapFn: (arg: T) => U): U;
+
   abstract [IntoIteratorSymbol](): IntoIteratorMethods<T>;
 }
 
@@ -167,6 +176,10 @@ export class Ok<T, E> extends Result<T, E> {
 
   mapOr<U>(_defaultValue: U, fn: (arg: T) => U): U {
     return fn(this.#data);
+  }
+
+  mapOrElse<U>(_defaultFn: (arg: E) => U, mapFn: (arg: T) => U): U {
+    return mapFn(this.#data);
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
@@ -230,6 +243,10 @@ export class Err<T, E> extends Result<T, E> {
 
   mapOr<U>(defaultValue: U, _fn: (arg: T) => U): U {
     return defaultValue;
+  }
+
+  mapOrElse<U>(defaultFn: (arg: E) => U, _mapFn: (arg: T) => U): U {
+    return defaultFn(this.#error);
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
