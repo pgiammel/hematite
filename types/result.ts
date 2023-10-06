@@ -43,6 +43,11 @@ export abstract class Result<T, E> implements IntoIterator<T> {
    */
   abstract err(): Option<E>;
 
+  /**
+   * Converts from `Result<Result<T, E>, E>` to `Result<T, E>`
+   */
+  abstract flatten<U>(this: Result<Result<U, E>, E>): Result<U, E>;
+
   isOk(): this is Ok<T, E> {
     return this instanceof Ok;
   }
@@ -105,6 +110,10 @@ export class Ok<T, E> extends Result<T, E> {
     return Option.None();
   }
 
+  flatten<U>(this: Ok<Result<U, E>, E>): Result<U, E> {
+    return this.#data;
+  }
+
   unwrap(): T {
     return this.#data;
   }
@@ -146,6 +155,10 @@ export class Err<T, E> extends Result<T, E> {
 
   err(): Option<E> {
     return Option.Some(this.#error);
+  }
+
+  flatten<U>(this: Err<Result<U, E>, E>): Result<U, E> {
+    return Result.Err(this.#error);
   }
 
   unwrap(): T {
