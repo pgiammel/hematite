@@ -99,6 +99,15 @@ export abstract class Result<T, E> implements IntoIterator<T> {
    */
   abstract map<U>(fn: (arg: T) => U): Result<U, E>;
 
+  /**
+   * Maps a `Result<T, E>` to `Result<T, F>` by applying a function to a
+   * contained `Err` value, leaving an `Ok` value untouched.
+   *
+   * This function can be used to pass through a successful result while
+   * handling an error.
+   */
+  abstract mapErr<F>(fn: (arg: E) => F): Result<T, F>;
+
   abstract [IntoIteratorSymbol](): IntoIteratorMethods<T>;
 }
 
@@ -144,6 +153,10 @@ export class Ok<T, E> extends Result<T, E> {
 
   map<U>(fn: (arg: T) => U): Result<U, E> {
     return Result.Ok(fn(this.#data));
+  }
+
+  mapErr<F>(_fn: (arg: E) => F): Result<T, F> {
+    return Result.Ok(this.#data);
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
@@ -199,6 +212,10 @@ export class Err<T, E> extends Result<T, E> {
 
   map<U>(_fn: (arg: T) => U): Result<U, E> {
     return Result.Err(this.#error);
+  }
+
+  mapErr<F>(fn: (arg: E) => F): Result<T, F> {
+    return Result.Err(fn(this.#error));
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
