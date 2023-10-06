@@ -1,0 +1,27 @@
+name: Deno Fmt
+on: [push]
+permissions:
+  contents: write
+jobs:
+  DenoFmt:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup Deno
+        uses: denoland/setup-deno@v1
+        with:
+          deno-version: "1.37.1"
+      - name: Deno Fmt
+        run: deno fmt
+      - name: Check for modified files
+        id: git-check
+        run: echo "modified=$(if git diff-index --quiet HEAD --; then echo "false"; else echo "true"; fi)" >> $GITHUB_OUTPUT
+      - name: Push changes
+        if: steps.git-check.outputs.modified == 'true'
+        run: |
+          git config --global user.name "Pascal Giammelluca [GH Action]"
+          git config --global user.email "pascal.giammelluca@gmail.com"
+          git remote set-url origin https://x-access-token:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}
+          git commit -am "[GH Action: Deno Fmt] Automated file formatting via deno fmt"
+          git push
