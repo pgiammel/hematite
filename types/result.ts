@@ -52,6 +52,12 @@ export abstract class Result<T, E> implements IntoIterator<T> {
     return this instanceof Ok;
   }
 
+  /**
+   * @returns `true` if the result is `Ok` and the value inside of it matches a
+   * predicate
+   */
+  abstract isOkAnd(fn: (arg: T) => boolean): this is Ok<T, E>;
+
   isErr(): this is Err<T, E> {
     return this instanceof Err;
   }
@@ -120,6 +126,10 @@ export class Ok<T, E> extends Result<T, E> {
     return this.#data;
   }
 
+  isOkAnd(fn: (arg: T) => boolean): this is Ok<T, E> {
+    return fn(this.#data);
+  }
+
   isErrAnd(_fn: (arg: E) => boolean): boolean {
     return false;
   }
@@ -169,6 +179,10 @@ export class Err<T, E> extends Result<T, E> {
 
   flatten<U>(this: Err<Result<U, E>, E>): Result<U, E> {
     return Result.Err(this.#error);
+  }
+
+  isOkAnd(_fn: (arg: T) => boolean): this is Ok<T, E> {
+    return false;
   }
 
   isErrAnd(fn: (arg: E) => boolean): boolean {
