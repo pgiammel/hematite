@@ -29,6 +29,14 @@ export abstract class Result<T, E> implements IntoIterator<T> {
    */
   abstract and<U>(rhs: Result<U, E>): Result<U, E>;
 
+  /**
+   * Calls `fn` if the result is `Ok`, otherwise returns the `Err` value of
+   * self.
+   *
+   * This function can be used for control flow based on `Result` values.
+   */
+  abstract andThen<U>(fn: (arg: T) => Result<U, E>): Result<U, E>;
+
   isOk(): this is Ok<T, E> {
     return this instanceof Ok;
   }
@@ -83,6 +91,10 @@ export class Ok<T, E> extends Result<T, E> {
     return rhs;
   }
 
+  andThen<U>(fn: (arg: T) => Result<U, E>): Result<U, E> {
+    return fn(this.#data);
+  }
+
   unwrap(): T {
     return this.#data;
   }
@@ -115,6 +127,10 @@ export class Err<T, E> extends Result<T, E> {
   }
 
   and<U>(_rhs: Result<U, E>): Result<U, E> {
+    return Result.Err(this.#error);
+  }
+
+  andThen<U>(_fn: (arg: T) => Result<U, E>): Result<U, E> {
     return Result.Err(this.#error);
   }
 
