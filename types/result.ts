@@ -128,6 +128,12 @@ export abstract class Result<T, E> implements IntoIterator<T> {
    */
   abstract ok(): Option<T>;
 
+  /**
+   * @returns `rhs` if the result is `Err`, otherwise returns the `Ok` value of
+   * self
+   */
+  abstract or(rhs: Result<T, E>): Result<T, E>;
+
   abstract [IntoIteratorSymbol](): IntoIteratorMethods<T>;
 }
 
@@ -189,6 +195,10 @@ export class Ok<T, E> extends Result<T, E> {
 
   ok(): Option<T> {
     return Option.Some(this.#data);
+  }
+
+  or(_rhs: Result<T, E>): Result<T, E> {
+    return this;
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
@@ -260,6 +270,10 @@ export class Err<T, E> extends Result<T, E> {
 
   ok(): Option<T> {
     return Option.None();
+  }
+
+  or(rhs: Result<T, E>): Result<T, E> {
+    return rhs;
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
