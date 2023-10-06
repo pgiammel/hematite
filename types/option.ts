@@ -4,11 +4,8 @@ import {
   IntoIteratorMethods,
   IntoIteratorSymbol,
 } from "../traits/into_iterator.ts";
-import { TwoTuple } from "../utils/tuple.ts";
 import { UnwrapError } from "./error.ts";
 import { Result } from "./result.ts";
-
-export type OptionItem<T> = T extends Option<infer U> ? U : never;
 
 /**
  * Type `Option` represents an optional value: ever `Option` is either `Some`
