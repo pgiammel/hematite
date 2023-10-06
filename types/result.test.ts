@@ -339,6 +339,22 @@ Deno.test("Result<T, E>", async (t) => {
     });
   });
 
+  await t.step("ok", async (t) => {
+    await t.step("Ok(data) => Some(data)", () => {
+      const data = "Hello";
+      const result = Result.Ok(data).ok();
+
+      assertInstanceOf(result, Some<string>);
+      assertEquals(result.unwrap(), data);
+    });
+
+    await t.step("Err(_) => None", () => {
+      const result = Result.Err(-1).ok();
+
+      assertInstanceOf(result, None<unknown>);
+    })
+  });
+
   await t.step("IntoIterator trait", async (t) => {
     await t.step("intoIter", async (t) => {
       await t.step("Result.Ok(data) => Iterator over [data]", () => {

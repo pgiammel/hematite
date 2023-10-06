@@ -123,6 +123,11 @@ export abstract class Result<T, E> implements IntoIterator<T> {
    */
   abstract mapOrElse<U>(defaultFn: (arg: E) => U, mapFn: (arg: T) => U): U;
 
+  /**
+   * Converts from `Result<T, E>` to `Option<T>`
+   */
+  abstract ok(): Option<T>;
+
   abstract [IntoIteratorSymbol](): IntoIteratorMethods<T>;
 }
 
@@ -180,6 +185,10 @@ export class Ok<T, E> extends Result<T, E> {
 
   mapOrElse<U>(_defaultFn: (arg: E) => U, mapFn: (arg: T) => U): U {
     return mapFn(this.#data);
+  }
+
+  ok(): Option<T> {
+    return Option.Some(this.#data);
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
@@ -247,6 +256,10 @@ export class Err<T, E> extends Result<T, E> {
 
   mapOrElse<U>(defaultFn: (arg: E) => U, _mapFn: (arg: T) => U): U {
     return defaultFn(this.#error);
+  }
+
+  ok(): Option<T> {
+    return Option.None();
   }
 
   [IntoIteratorSymbol](): IntoIteratorMethods<T> {
