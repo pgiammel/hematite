@@ -139,7 +139,7 @@ export abstract class Option<T> implements IntoIterator<T> {
   /**
    * Converts from `Option<Option<T>>` to `Option<T>`.
    */
-  abstract flatten(this: Option<Option<OptionItem<T>>>): Option<OptionItem<T>>;
+  abstract flatten<U>(this: Option<Option<U>>): Option<U>;
 
   /**
    * @return `this` if it is not `None`, otherwise return `other`
@@ -152,9 +152,7 @@ export abstract class Option<T> implements IntoIterator<T> {
    */
   abstract orElse(fn: () => Option<T>): Option<T>;
 
-  abstract transpose<U, E>(
-    this: Option<Result<U, E>>,
-  ): Result<Option<U>, E>;
+  abstract transpose<U, E>(this: Option<Result<U, E>>): Result<Option<U>, E>;
 
   /**
    * @returns `this` if only `this` is `Some`, `other` if only `other` is `Some`,
@@ -174,9 +172,7 @@ export abstract class Option<T> implements IntoIterator<T> {
    * @returns `[Some<T>, Some<U>]` if `option` is `Some<[T, U]>`, otherwise
    * `[None<T>, None<U>]`
    */
-  abstract unzip(
-    this: Option<[TwoTuple<T>[0], TwoTuple<T>[1]]>,
-  ): [Option<TwoTuple<T>[0]>, Option<TwoTuple<T>[1]>];
+  abstract unzip<U, V>(this: Option<[U, V]>): [Option<U>, Option<V>];
 
   abstract [IntoIteratorSymbol](): IntoIteratorMethods<T>;
 }
@@ -237,7 +233,7 @@ export class Some<T> extends Option<T> {
     return Option.None();
   }
 
-  flatten(this: Some<Option<OptionItem<T>>>): Option<OptionItem<T>> {
+  flatten<U>(this: Some<Option<U>>): Option<U> {
     return this.#value;
   }
 
@@ -249,9 +245,7 @@ export class Some<T> extends Option<T> {
     return this;
   }
 
-  transpose<U, E>(
-    this: Some<Result<U, E>>,
-  ): Result<Option<U>, E> {
+  transpose<U, E>(this: Some<Result<U, E>>): Result<Option<U>, E> {
     return this.#value.map((v) => Option.Some(v));
   }
 
@@ -271,9 +265,7 @@ export class Some<T> extends Option<T> {
     return Option.None();
   }
 
-  unzip(
-    this: Some<[TwoTuple<T>[0], TwoTuple<T>[1]]>,
-  ): [Option<TwoTuple<T>[0]>, Option<TwoTuple<T>[1]>] {
+  unzip<U, V>(this: Some<[U, V]>): [Option<U>, Option<V>] {
     return [
       Option.Some(this.#value[0]),
       Option.Some(this.#value[1]),
@@ -343,7 +335,7 @@ export class None<T> extends Option<T> {
     return this;
   }
 
-  flatten(this: None<Option<OptionItem<T>>>): Option<OptionItem<T>> {
+  flatten<U>(this: None<Option<U>>): Option<U> {
     return Option.None();
   }
 
@@ -363,9 +355,7 @@ export class None<T> extends Option<T> {
     return Option.None();
   }
 
-  transpose<U, E>(
-    this: None<Result<U, E>>,
-  ): Result<Option<U>, E> {
+  transpose<U, E>(this: None<Result<U, E>>): Result<Option<U>, E> {
     return Result.Ok(Option.None());
   }
 
@@ -373,9 +363,7 @@ export class None<T> extends Option<T> {
     return Option.None();
   }
 
-  unzip(
-    this: None<[TwoTuple<T>[0], TwoTuple<T>[1]]>,
-  ): [Option<TwoTuple<T>[0]>, Option<TwoTuple<T>[1]>] {
+  unzip<U, V>(this: None<[U, V]>): [Option<U>, Option<V>] {
     return [
       Option.None(),
       Option.None(),
