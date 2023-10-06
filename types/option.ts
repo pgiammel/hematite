@@ -153,7 +153,7 @@ export abstract class Option<T> implements IntoIterator<T> {
   abstract orElse(fn: () => Option<T>): Option<T>;
 
   abstract transpose<U, E>(
-      this: Option<Result<U, E>>,
+    this: Option<Result<U, E>>,
   ): Result<Option<U>, E>;
 
   /**
@@ -250,9 +250,9 @@ export class Some<T> extends Option<T> {
   }
 
   transpose<U, E>(
-      this: Some<Result<U, E>>
+    this: Some<Result<U, E>>,
   ): Result<Option<U>, E> {
-    return this.#value.map(v => Option.Some(v));
+    return this.#value.map((v) => Option.Some(v));
   }
 
   xor(other: Option<T>): Option<T> {
@@ -364,7 +364,7 @@ export class None<T> extends Option<T> {
   }
 
   transpose<U, E>(
-      this: None<Result<U, E>>
+    this: None<Result<U, E>>,
   ): Result<Option<U>, E> {
     return Result.Ok(Option.None());
   }

@@ -20,7 +20,7 @@ export class Map<T, U> implements Iterator<U> {
     }
 
     map<ReturnT>(
-        fn: <InputT extends U>(arg: InputT) => ReturnT
+      fn: <InputT extends U>(arg: InputT) => ReturnT,
     ): Map<U, ReturnT> {
       return Map.create(this.#map, fn);
     }
@@ -30,16 +30,16 @@ export class Map<T, U> implements Iterator<U> {
   #func: <InputT extends T>(arg: InputT) => U;
 
   constructor(
-      baseIterator: Iterator<T>,
-      func: <InputT extends T>(arg: InputT) => U
+    baseIterator: Iterator<T>,
+    func: <InputT extends T>(arg: InputT) => U,
   ) {
     this.#baseIterator = baseIterator;
     this.#func = func;
   }
 
   static create<T, ReturnT>(
-      iterator: Iterator<T>,
-      fn: <InputT extends T>(arg: InputT) => ReturnT
+    iterator: Iterator<T>,
+    fn: <InputT extends T>(arg: InputT) => ReturnT,
   ): Map<T, ReturnT> {
     return new Map<T, ReturnT>(iterator, fn);
   }

@@ -8,7 +8,7 @@ import { None, Option, Some } from "./option.ts";
 import { IntoIteratorSymbol } from "../traits/into_iterator.ts";
 import { IteratorSymbol } from "../traits/iterator.ts";
 import { UnwrapError } from "./error.ts";
-import {Err, Ok, Result} from "./result.ts";
+import { Err, Ok, Result } from "./result.ts";
 
 Deno.test("Option<T>", async (t) => {
   await t.step("Some", () => assertInstanceOf(Option.Some("Hello"), Some));
@@ -147,42 +147,42 @@ Deno.test("Option<T>", async (t) => {
   });
 
   await t.step("okOr", async (t) => {
-      await t.step("Some(value), err => Ok(value)", () => {
-          const value = "Hello";
-          const err = -1;
-          const result = Option.Some(value).okOr(err);
+    await t.step("Some(value), err => Ok(value)", () => {
+      const value = "Hello";
+      const err = -1;
+      const result = Option.Some(value).okOr(err);
 
-          assertInstanceOf(result, Ok<string, number>);
-          assertEquals(result.unwrap(), value);
-      });
+      assertInstanceOf(result, Ok<string, number>);
+      assertEquals(result.unwrap(), value);
+    });
 
-      await t.step("None, err => Err(err)", () => {
-          const err = -1;
-          const result = Option.None<string>().okOr(err);
+    await t.step("None, err => Err(err)", () => {
+      const err = -1;
+      const result = Option.None<string>().okOr(err);
 
-          assertInstanceOf(result, Err<string, number>);
-          assertEquals(result.unwrapErr(), err);
-      });
+      assertInstanceOf(result, Err<string, number>);
+      assertEquals(result.unwrapErr(), err);
+    });
   });
 
-    await t.step("okOrElse", async (t) => {
-        await t.step("Some(value), fn => Ok(value)", () => {
-            const value = "Hello";
-            const fn = () => -1;
-            const result = Option.Some(value).okOrElse(fn);
+  await t.step("okOrElse", async (t) => {
+    await t.step("Some(value), fn => Ok(value)", () => {
+      const value = "Hello";
+      const fn = () => -1;
+      const result = Option.Some(value).okOrElse(fn);
 
-            assertInstanceOf(result, Ok<string, number>);
-            assertEquals(result.unwrap(), value);
-        });
-
-        await t.step("None, fn => Err(fn())", () => {
-            const fn = () => -1;
-            const result = Option.None<string>().okOrElse(fn);
-
-            assertInstanceOf(result, Err<string, number>);
-            assertEquals(result.unwrapErr(), fn());
-        });
+      assertInstanceOf(result, Ok<string, number>);
+      assertEquals(result.unwrap(), value);
     });
+
+    await t.step("None, fn => Err(fn())", () => {
+      const fn = () => -1;
+      const result = Option.None<string>().okOrElse(fn);
+
+      assertInstanceOf(result, Err<string, number>);
+      assertEquals(result.unwrapErr(), fn());
+    });
+  });
 
   await t.step("and", async (t) => {
     await t.step(
@@ -397,32 +397,32 @@ Deno.test("Option<T>", async (t) => {
   });
 
   await t.step("transpose", async (t) => {
-     await t.step("Some(Ok(value)) => Ok(Some(value))", () => {
-         const value = "Hello";
-         const result = Option.Some(Result.Ok(value)).transpose();
+    await t.step("Some(Ok(value)) => Ok(Some(value))", () => {
+      const value = "Hello";
+      const result = Option.Some(Result.Ok(value)).transpose();
 
-         assertInstanceOf(result, Ok<Option<string>, unknown>);
+      assertInstanceOf(result, Ok<Option<string>, unknown>);
 
-         const inner = result.unwrap();
+      const inner = result.unwrap();
 
-         assertInstanceOf(inner, Some<string>);
-         assertEquals(inner.unwrap(), value);
-     });
+      assertInstanceOf(inner, Some<string>);
+      assertEquals(inner.unwrap(), value);
+    });
 
-      await t.step("Some(Ok(value)) => Ok(Some(value))", () => {
-          const error = -1;
-          const result = Option.Some(Result.Err(error)).transpose();
+    await t.step("Some(Ok(value)) => Ok(Some(value))", () => {
+      const error = -1;
+      const result = Option.Some(Result.Err(error)).transpose();
 
-          assertInstanceOf(result, Err<Option<unknown>, number>);
-          assertEquals(result.unwrapErr(), error);
-      });
+      assertInstanceOf(result, Err<Option<unknown>, number>);
+      assertEquals(result.unwrapErr(), error);
+    });
 
-      await t.step("None => Ok(None)", () => {
-          const result = Option.None<Result<unknown, unknown>>().transpose();
+    await t.step("None => Ok(None)", () => {
+      const result = Option.None<Result<unknown, unknown>>().transpose();
 
-          assertInstanceOf(result, Ok<Option<unknown>, unknown>);
-          assertInstanceOf(result.unwrap(), None<unknown>);
-      });
+      assertInstanceOf(result, Ok<Option<unknown>, unknown>);
+      assertInstanceOf(result.unwrap(), None<unknown>);
+    });
   });
 
   await t.step("xor", async (t) => {
