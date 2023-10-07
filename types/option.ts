@@ -292,11 +292,15 @@ export class Some<T> extends Option<T> {
     const depth = options.depth ?? 0;
 
     if (depth > 1) {
-      return `Some(${inspect(
-        this.#value, {
-        ...options,
-        depth: depth - 1,
-      })})`;
+      return `Some(${
+        inspect(
+          this.#value,
+          {
+            ...options,
+            depth: depth - 1,
+          },
+        )
+      })`;
     }
 
     return "Some(...)";

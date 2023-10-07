@@ -259,13 +259,15 @@ export class Ok<T, E> extends Result<T, E> {
     const depth = options.depth ?? 0;
 
     if (depth > 1) {
-      return `Ok(${inspect(
-        this.#data,
-        {
-          ...options,
-          depth: depth - 1,
-        }
-      )})`;
+      return `Ok(${
+        inspect(
+          this.#data,
+          {
+            ...options,
+            depth: depth - 1,
+          },
+        )
+      })`;
     }
 
     return "Ok(...)";
@@ -373,8 +375,9 @@ export class Err<T, E> extends Result<T, E> {
           {
             ...options,
             depth: depth - 1,
-          }
-        )})`;
+          },
+        )
+      })`;
     }
 
     return "Err(...)";
