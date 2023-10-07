@@ -1,5 +1,7 @@
 # Hematite
 
+![Test Status](https://github.com/pgiammel/hematite/actions/workflows/deno-test.yml/badge.svg)
+
 ## Table of contents
 
 - [What is this?](#what-is-this)
