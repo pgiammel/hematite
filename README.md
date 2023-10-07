@@ -1,6 +1,8 @@
 # Hematite
 
-![Test Status](https://github.com/pgiammel/hematite/actions/workflows/deno-test.yml/badge.svg)
+[![Test Status](
+    https://github.com/pgiammel/hematite/actions/workflows/deno-test.yml/badge.svg
+)](https://github.com/pgiammel/hematite/actions/workflows/deno-test.yml)
 
 ## Table of contents
 
@@ -31,6 +33,7 @@ discourage you from using this library in any production work.
 
 ```
 hematite
+|- mod.ts ---------------- You can import important stuff from here
 |- traits
    |- into_iterator.ts --- IntoIterator trait wannabe
    |- iterator.ts -------- Iterator trait lookalike
@@ -39,7 +42,7 @@ hematite
    |- map.ts ------------- Map struct copycat
    |- option.ts ---------- Option enum impersonator
    |- result.ts ---------- Result enum aspirant
-   |- mod.ts ------------- Types entrypoint, you can import from here
+   |- mod.ts ------------- Types entrypoint
 |- utils
    |- function.ts -------- Function utilities
    |- tuple.ts ----------- Tuple type utilities
