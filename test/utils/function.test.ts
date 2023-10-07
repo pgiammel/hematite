@@ -1,5 +1,5 @@
-import { assertEquals } from "../deps.ts";
-import { combine, curry, flip } from "./function.ts";
+import { assertEquals } from "../../deps.ts";
+import { combine, curry, flip } from "../../utils/function.ts";
 
 const functionsByParamCount = [
   (): string => "Hello",

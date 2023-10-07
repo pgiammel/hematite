@@ -6,5 +6,10 @@
       "tags": ["recommended"],
       "exclude": ["no-namespace"]
     }
+  },
+  "test": {
+    "include": [
+      "test/**/*.ts"
+    ]
   }
 }
