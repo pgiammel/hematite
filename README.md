@@ -1,8 +1,6 @@
 # Hematite
 
-[![Test Status](
-    https://github.com/pgiammel/hematite/actions/workflows/deno-test.yml/badge.svg
-)](https://github.com/pgiammel/hematite/actions/workflows/deno-test.yml)
+[![Test Status](https://github.com/pgiammel/hematite/actions/workflows/deno-test.yml/badge.svg)](https://github.com/pgiammel/hematite/actions/workflows/deno-test.yml)
 
 ## Table of contents
 

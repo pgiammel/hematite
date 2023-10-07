@@ -1,5 +1,1 @@
-export {
-    Option,
-    Result,
-    UnwrapError,
-} from "./types/mod.ts";
+export { Option, Result, UnwrapError } from "./types/mod.ts";
