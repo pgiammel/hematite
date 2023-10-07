@@ -289,7 +289,17 @@ export class Some<T> extends Option<T> {
     inspect: typeof Deno.inspect,
     options: Deno.InspectOptions,
   ): string {
-    return `Some(${inspect(this.#value, options)})`;
+    const depth = options.depth ?? 0;
+
+    if (depth > 1) {
+      return `Some(${inspect(
+        this.#value, {
+        ...options,
+        depth: depth - 1,
+      })})`;
+    }
+
+    return "Some(...)";
   }
 }
 

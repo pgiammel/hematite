@@ -251,6 +251,25 @@ export class Ok<T, E> extends Result<T, E> {
       },
     };
   }
+
+  [Symbol.for("Deno.customInspect")](
+    inspect: typeof Deno.inspect,
+    options: Deno.InspectOptions,
+  ): string {
+    const depth = options.depth ?? 0;
+
+    if (depth > 1) {
+      return `Ok(${inspect(
+        this.#data,
+        {
+          ...options,
+          depth: depth - 1,
+        }
+      )})`;
+    }
+
+    return "Ok(...)";
+  }
 }
 
 export class Err<T, E> extends Result<T, E> {
@@ -339,5 +358,25 @@ export class Err<T, E> extends Result<T, E> {
         return ConstIterator.create<T>([]);
       },
     };
+  }
+
+  [Symbol.for("Deno.customInspect")](
+    inspect: typeof Deno.inspect,
+    options: Deno.InspectOptions,
+  ): string {
+    const depth = options.depth ?? 0;
+
+    if (depth > 1) {
+      return `Err(${
+        inspect(
+          this.#error,
+          {
+            ...options,
+            depth: depth - 1,
+          }
+        )})`;
+    }
+
+    return "Err(...)";
   }
 }
